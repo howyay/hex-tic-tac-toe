@@ -43,7 +43,9 @@ Declared values (must be multiples of 4):
 
 Exceptions: none
 
-### Canvas-Specific Spacing
+### Canvas Rendering Geometry
+
+> These are geometric rendering constants derived from hex math, not layout spacing tokens. They are exempt from the 4px grid constraint.
 
 | Token | Value | Usage | Source |
 |-------|-------|-------|--------|
