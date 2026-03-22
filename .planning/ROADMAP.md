@@ -13,7 +13,7 @@ This roadmap delivers a peer-to-peer hexagonal Connect6 game in five phases. The
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Hex Grid Engine** - Canvas-rendered hex grid with axial coordinates, viewport culling, pan, and zoom
-- [ ] **Phase 2: Game Rules and Local Play** - Complete Connect6 rules, win detection, game over, rematch as a local two-player game
+- [x] **Phase 2: Game Rules and Local Play** - Complete Connect6 rules, win detection, game over, rematch as a local two-player game (completed 2026-03-22)
 - [ ] **Phase 3: Theme and Touch Polish** - Light/dark theme, touch input (tap-to-place vs drag-to-pan), minimal aesthetic
 - [ ] **Phase 4: WebRTC Multiplayer** - P2P connection via shareable link, host-authoritative state sync, connection status
 - [ ] **Phase 5: Turn Timer** - Configurable turn timer with synchronized countdown and auto-forfeit
@@ -52,7 +52,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — TDD game rules: types, pure logic functions, win detection with full test coverage
 - [x] 02-02-PLAN.md — Reactive game state, stone rendering, canvas click-to-place integration
-- [ ] 02-03-PLAN.md — DOM overlays (turn indicator, move counter, game over) + App wiring + visual verification
+- [x] 02-03-PLAN.md — DOM overlays (turn indicator, move counter, game over) + App wiring + visual verification
 
 ### Phase 3: Theme and Touch Polish
 **Goal**: The game looks clean and minimal with light/dark theme support, and is fully playable on touch devices with correct gesture handling
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Hex Grid Engine | 3/3 | Complete | - |
-| 2. Game Rules and Local Play | 2/3 | In Progress|  |
+| 2. Game Rules and Local Play | 3/3 | Complete   | 2026-03-22 |
 | 3. Theme and Touch Polish | 0/0 | Not started | - |
 | 4. WebRTC Multiplayer | 0/0 | Not started | - |
 | 5. Turn Timer | 0/0 | Not started | - |

@@ -22,7 +22,7 @@
 - [x] **GAME-04**: Win detection checks all 3 hex axes: horizontal (q-axis), and both diagonals (r-axis, s-axis)
 - [x] **GAME-05**: Game ends immediately when a win is detected — no further placements accepted
 - [x] **GAME-06**: Winning line of 6 stones is visually highlighted on the board
-- [ ] **GAME-07**: Game over screen displays the winner (X or O)
+- [x] **GAME-07**: Game over screen displays the winner (X or O)
 - [x] **GAME-08**: Both players can trigger a rematch without generating a new link
 - [x] **GAME-09**: On rematch, first player alternates (loser goes first, or swap)
 
@@ -40,8 +40,8 @@
 
 ### UI/UX
 
-- [ ] **UI-01**: Turn indicator shows whose turn it is (X or O)
-- [ ] **UI-02**: Placement counter shows how many stones remain this turn (e.g., "2 of 2")
+- [x] **UI-01**: Turn indicator shows whose turn it is (X or O)
+- [x] **UI-02**: Placement counter shows how many stones remain this turn (e.g., "2 of 2")
 - [x] **UI-03**: Move counter tracks total moves played
 - [ ] **UI-04**: Light and dark theme toggle
 - [ ] **UI-05**: Theme preference persisted in localStorage
@@ -99,11 +99,11 @@
 | GAME-04 | Phase 2 | Complete |
 | GAME-05 | Phase 2 | Complete |
 | GAME-06 | Phase 2 | Complete |
-| GAME-07 | Phase 2 | Pending |
+| GAME-07 | Phase 2 | Complete |
 | GAME-08 | Phase 2 | Complete |
 | GAME-09 | Phase 2 | Complete |
-| UI-01 | Phase 2 | Pending |
-| UI-02 | Phase 2 | Pending |
+| UI-01 | Phase 2 | Complete |
+| UI-02 | Phase 2 | Complete |
 | UI-03 | Phase 2 | Complete |
 | UI-04 | Phase 3 | Pending |
 | UI-05 | Phase 3 | Pending |
