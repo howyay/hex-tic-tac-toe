@@ -51,7 +51,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — TDD game rules: types, pure logic functions, win detection with full test coverage
-- [ ] 02-02-PLAN.md — Reactive game state, stone rendering, canvas click-to-place integration
+- [x] 02-02-PLAN.md — Reactive game state, stone rendering, canvas click-to-place integration
 - [ ] 02-03-PLAN.md — DOM overlays (turn indicator, move counter, game over) + App wiring + visual verification
 
 ### Phase 3: Theme and Touch Polish
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Hex Grid Engine | 3/3 | Complete | - |
-| 2. Game Rules and Local Play | 0/3 | Planning complete | - |
+| 2. Game Rules and Local Play | 2/3 | In Progress|  |
 | 3. Theme and Touch Polish | 0/0 | Not started | - |
 | 4. WebRTC Multiplayer | 0/0 | Not started | - |
 | 5. Turn Timer | 0/0 | Not started | - |

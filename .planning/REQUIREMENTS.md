@@ -21,7 +21,7 @@
 - [x] **GAME-03**: A player wins when they have 6 consecutive stones along any of the 3 hex axes
 - [x] **GAME-04**: Win detection checks all 3 hex axes: horizontal (q-axis), and both diagonals (r-axis, s-axis)
 - [x] **GAME-05**: Game ends immediately when a win is detected — no further placements accepted
-- [ ] **GAME-06**: Winning line of 6 stones is visually highlighted on the board
+- [x] **GAME-06**: Winning line of 6 stones is visually highlighted on the board
 - [ ] **GAME-07**: Game over screen displays the winner (X or O)
 - [x] **GAME-08**: Both players can trigger a rematch without generating a new link
 - [x] **GAME-09**: On rematch, first player alternates (loser goes first, or swap)
@@ -98,7 +98,7 @@
 | GAME-03 | Phase 2 | Complete |
 | GAME-04 | Phase 2 | Complete |
 | GAME-05 | Phase 2 | Complete |
-| GAME-06 | Phase 2 | Pending |
+| GAME-06 | Phase 2 | Complete |
 | GAME-07 | Phase 2 | Pending |
 | GAME-08 | Phase 2 | Complete |
 | GAME-09 | Phase 2 | Complete |
