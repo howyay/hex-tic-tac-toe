@@ -14,6 +14,19 @@
 
   let dragDistance = 0;
 
+  // Touch gesture state
+  let touchStartTime = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchMoved = 0;
+  let activeTouchId: number | null = null;
+  let initialPinchDist = 0;
+  let lastPinchMidX = 0;
+  let lastPinchMidY = 0;
+
+  const TOUCH_TAP_TIME = 200;   // ms (D-09: <200ms)
+  const TOUCH_TAP_DIST = 10;    // px cumulative (D-09: minimal movement)
+
   // Sync debugCoords state to bindable prop
   $effect(() => {
     debugActive = state.debugCoords;
@@ -151,6 +164,94 @@
     const cursorPoint = { x: e.offsetX, y: e.offsetY };
     state.camera = zoomAtPoint(state.camera, cursorPoint, zoomDelta);
   }
+
+  function handleTouchStart(e: TouchEvent) {
+    e.preventDefault(); // Suppress synthesized mouse events and 300ms click delay
+
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      activeTouchId = t.identifier;
+      touchStartTime = performance.now();
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      touchMoved = 0;
+    } else if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      initialPinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      lastPinchMidX = (t1.clientX + t2.clientX) / 2;
+      lastPinchMidY = (t1.clientY + t2.clientY) / 2;
+      activeTouchId = null; // Cancel tap/drag — now a pinch
+    }
+  }
+
+  function handleTouchMove(e: TouchEvent) {
+    if (e.touches.length === 2) {
+      e.preventDefault(); // Prevent browser pinch zoom
+
+      if (gameState.status === 'won') return; // Board freeze on win
+
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const midX = (t1.clientX + t2.clientX) / 2;
+      const midY = (t1.clientY + t2.clientY) / 2;
+
+      // Zoom: scale ratio relative to initial pinch distance
+      if (initialPinchDist > 0) {
+        const scale = dist / initialPinchDist;
+        const rect = canvas.getBoundingClientRect();
+        const canvasPoint = { x: midX - rect.left, y: midY - rect.top };
+        state.camera = zoomAtPoint(state.camera, canvasPoint, 1 - scale);
+        initialPinchDist = dist;
+      }
+
+      // Pan by midpoint delta
+      const panDx = midX - lastPinchMidX;
+      const panDy = midY - lastPinchMidY;
+      state.camera = panCamera(state.camera, panDx, panDy);
+      lastPinchMidX = midX;
+      lastPinchMidY = midY;
+    } else if (e.touches.length === 1 && activeTouchId !== null) {
+      // Find touch by identifier (not array index)
+      let touch: Touch | null = null;
+      for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].identifier === activeTouchId) {
+          touch = e.touches[i];
+          break;
+        }
+      }
+      if (!touch) return;
+
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      touchMoved += Math.abs(dx) + Math.abs(dy);
+
+      if (touchMoved > TOUCH_TAP_DIST && gameState.status !== 'won') {
+        state.camera = panCamera(state.camera, dx, dy);
+      }
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }
+  }
+
+  function handleTouchEnd(e: TouchEvent) {
+    if (activeTouchId === null) return; // Was a pinch, not a tap
+
+    const elapsed = performance.now() - touchStartTime;
+
+    if (elapsed < TOUCH_TAP_TIME && touchMoved < TOUCH_TAP_DIST && gameState.status === 'playing') {
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = touchStartX - rect.left;
+      const offsetY = touchStartY - rect.top;
+      const worldPoint = screenToWorld({ x: offsetX, y: offsetY }, state.camera);
+      const fractional = pixelToHex(worldPoint, HEX_SIZE);
+      const hex = hexRound(fractional.q, fractional.r);
+      gameState.placeStone(hex);
+    }
+
+    activeTouchId = null;
+  }
 </script>
 
 <canvas
@@ -160,5 +261,8 @@
   onmouseup={handleMouseUp}
   onmouseleave={handleMouseLeave}
   onwheel={handleWheel}
+  ontouchstart={handleTouchStart}
+  ontouchmove={handleTouchMove}
+  ontouchend={handleTouchEnd}
   style="width: 100%; height: 100%; display: block; touch-action: none; cursor: {gameState.status === 'won' ? 'default' : state.isPanning ? 'grabbing' : 'grab'};"
 ></canvas>
