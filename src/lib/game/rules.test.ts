@@ -56,26 +56,25 @@ describe('isValidMove', () => {
     // Build a won game state manually
     let snap = createInitialSnapshot();
     // Place 6 X stones along q-axis to trigger a win
-    // First turn: X places 1 stone
+    // X first turn: 1 stone
     snap = applyMove(snap, { q: 0, r: 0 });
-    // O's turn: 2 stones
-    snap = applyMove(snap, { q: 0, r: 5 });
-    snap = applyMove(snap, { q: 0, r: 6 });
-    // X's turn: 2 stones
+    // O: 2 scattered stones (no axis alignment)
+    snap = applyMove(snap, { q: -5, r: 3 });
+    snap = applyMove(snap, { q: -7, r: 1 });
+    // X: 2 stones
     snap = applyMove(snap, { q: 1, r: 0 });
     snap = applyMove(snap, { q: 2, r: 0 });
-    // O's turn: 2 stones
-    snap = applyMove(snap, { q: 0, r: 7 });
-    snap = applyMove(snap, { q: 0, r: 8 });
-    // X's turn: 2 stones
+    // O: 2 scattered stones
+    snap = applyMove(snap, { q: -3, r: 5 });
+    snap = applyMove(snap, { q: -9, r: 2 });
+    // X: 2 stones
     snap = applyMove(snap, { q: 3, r: 0 });
     snap = applyMove(snap, { q: 4, r: 0 });
-    // O's turn: 2 stones
-    snap = applyMove(snap, { q: 0, r: 9 });
-    snap = applyMove(snap, { q: 0, r: 10 });
-    // X's turn: place 5th at q=5 (win on 6th)
+    // O: 2 scattered stones
+    snap = applyMove(snap, { q: -4, r: 7 });
+    snap = applyMove(snap, { q: -8, r: 4 });
+    // X wins with 6th stone
     snap = applyMove(snap, { q: 5, r: 0 });
-    // X has 6 consecutive: q=0..5, r=0 -- should be won now
     expect(snap.status).toBe('won');
     expect(isValidMove(snap, { q: 10, r: 10 })).toBe(false);
   });
@@ -176,25 +175,25 @@ describe('GAME-05: Win on first of 2 placements ends game immediately', () => {
     // X first turn: 1 stone at (0,0)
     snap = applyMove(snap, { q: 0, r: 0 });
 
-    // O: 2 stones off-axis
-    snap = applyMove(snap, { q: 0, r: 5 });
-    snap = applyMove(snap, { q: 0, r: 6 });
+    // O: 2 scattered stones (no axis alignment)
+    snap = applyMove(snap, { q: -5, r: 3 });
+    snap = applyMove(snap, { q: -7, r: 1 });
 
     // X: (1,0), (2,0)
     snap = applyMove(snap, { q: 1, r: 0 });
     snap = applyMove(snap, { q: 2, r: 0 });
 
-    // O: 2 stones off-axis
-    snap = applyMove(snap, { q: 0, r: 7 });
-    snap = applyMove(snap, { q: 0, r: 8 });
+    // O: 2 scattered stones
+    snap = applyMove(snap, { q: -3, r: 5 });
+    snap = applyMove(snap, { q: -9, r: 2 });
 
     // X: (3,0), (4,0)
     snap = applyMove(snap, { q: 3, r: 0 });
     snap = applyMove(snap, { q: 4, r: 0 });
 
-    // O: 2 stones off-axis
-    snap = applyMove(snap, { q: 0, r: 9 });
-    snap = applyMove(snap, { q: 0, r: 10 });
+    // O: 2 scattered stones
+    snap = applyMove(snap, { q: -4, r: 7 });
+    snap = applyMove(snap, { q: -8, r: 4 });
 
     // X's turn with 2 placements. First placement at (5,0) completes 6 in a row.
     expect(snap.currentPlayer).toBe('X');
@@ -250,21 +249,21 @@ describe('GAME-09: applyRematch after X wins sets loser (O) as starting player',
 
     // X first turn
     snap = applyMove(snap, { q: 0, r: 0 });
-    // O turns
-    snap = applyMove(snap, { q: 0, r: 5 });
-    snap = applyMove(snap, { q: 0, r: 6 });
+    // O scattered turns (no axis alignment)
+    snap = applyMove(snap, { q: -5, r: 3 });
+    snap = applyMove(snap, { q: -7, r: 1 });
     // X turns
     snap = applyMove(snap, { q: 1, r: 0 });
     snap = applyMove(snap, { q: 2, r: 0 });
-    // O turns
-    snap = applyMove(snap, { q: 0, r: 7 });
-    snap = applyMove(snap, { q: 0, r: 8 });
+    // O scattered turns
+    snap = applyMove(snap, { q: -3, r: 5 });
+    snap = applyMove(snap, { q: -9, r: 2 });
     // X turns
     snap = applyMove(snap, { q: 3, r: 0 });
     snap = applyMove(snap, { q: 4, r: 0 });
-    // O turns
-    snap = applyMove(snap, { q: 0, r: 9 });
-    snap = applyMove(snap, { q: 0, r: 10 });
+    // O scattered turns
+    snap = applyMove(snap, { q: -4, r: 7 });
+    snap = applyMove(snap, { q: -8, r: 4 });
     // X wins with 6th stone
     snap = applyMove(snap, { q: 5, r: 0 });
 
