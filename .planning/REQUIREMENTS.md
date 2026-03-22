@@ -12,7 +12,7 @@
 - [x] **GRID-03**: Only hexes within the visible viewport are rendered (viewport culling)
 - [x] **GRID-04**: User can pan the board by click-dragging (desktop) or touch-dragging (mobile)
 - [x] **GRID-05**: User can zoom in/out via scroll wheel (desktop) or pinch gesture (mobile)
-- [ ] **GRID-06**: Hex under cursor/finger shows hover preview of current player's stone color
+- [x] **GRID-06**: Hex under cursor/finger shows hover preview of current player's stone color
 
 ### Game Logic
 
@@ -92,7 +92,7 @@
 | GRID-03 | Phase 1 | Complete |
 | GRID-04 | Phase 1 | Complete |
 | GRID-05 | Phase 1 | Complete |
-| GRID-06 | Phase 1 | Pending |
+| GRID-06 | Phase 1 | Complete |
 | GAME-01 | Phase 2 | Pending |
 | GAME-02 | Phase 2 | Pending |
 | GAME-03 | Phase 2 | Pending |

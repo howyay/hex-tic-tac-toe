@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Scaffold project + hex math + camera math with TDD
 - [x] 01-02-PLAN.md — Canvas renderer + HexCanvas component with pan/zoom
-- [ ] 01-03-PLAN.md — Hover/debug polish + visual verification checkpoint
+- [x] 01-03-PLAN.md — Hover/debug polish + visual verification checkpoint
 
 ### Phase 2: Game Rules and Local Play
 **Goal**: Two players sharing one browser can play a complete game of hex Connect6 with correct rules, win detection, and rematch -- a fully playable local prototype
