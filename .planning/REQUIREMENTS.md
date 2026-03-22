@@ -87,44 +87,44 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRID-01 | — | Pending |
-| GRID-02 | — | Pending |
-| GRID-03 | — | Pending |
-| GRID-04 | — | Pending |
-| GRID-05 | — | Pending |
-| GRID-06 | — | Pending |
-| GAME-01 | — | Pending |
-| GAME-02 | — | Pending |
-| GAME-03 | — | Pending |
-| GAME-04 | — | Pending |
-| GAME-05 | — | Pending |
-| GAME-06 | — | Pending |
-| GAME-07 | — | Pending |
-| GAME-08 | — | Pending |
-| GAME-09 | — | Pending |
-| NET-01 | — | Pending |
-| NET-02 | — | Pending |
-| NET-03 | — | Pending |
-| NET-04 | — | Pending |
-| NET-05 | — | Pending |
-| NET-06 | — | Pending |
-| NET-07 | — | Pending |
-| NET-08 | — | Pending |
-| NET-09 | — | Pending |
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
-| UI-03 | — | Pending |
-| UI-04 | — | Pending |
-| UI-05 | — | Pending |
-| UI-06 | — | Pending |
-| UI-07 | — | Pending |
-| UI-08 | — | Pending |
+| GRID-01 | Phase 1 | Pending |
+| GRID-02 | Phase 1 | Pending |
+| GRID-03 | Phase 1 | Pending |
+| GRID-04 | Phase 1 | Pending |
+| GRID-05 | Phase 1 | Pending |
+| GRID-06 | Phase 1 | Pending |
+| GAME-01 | Phase 2 | Pending |
+| GAME-02 | Phase 2 | Pending |
+| GAME-03 | Phase 2 | Pending |
+| GAME-04 | Phase 2 | Pending |
+| GAME-05 | Phase 2 | Pending |
+| GAME-06 | Phase 2 | Pending |
+| GAME-07 | Phase 2 | Pending |
+| GAME-08 | Phase 2 | Pending |
+| GAME-09 | Phase 2 | Pending |
+| UI-01 | Phase 2 | Pending |
+| UI-02 | Phase 2 | Pending |
+| UI-03 | Phase 2 | Pending |
+| UI-04 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Pending |
+| UI-06 | Phase 3 | Pending |
+| UI-07 | Phase 3 | Pending |
+| UI-08 | Phase 3 | Pending |
+| NET-01 | Phase 4 | Pending |
+| NET-02 | Phase 4 | Pending |
+| NET-03 | Phase 4 | Pending |
+| NET-04 | Phase 4 | Pending |
+| NET-05 | Phase 4 | Pending |
+| NET-06 | Phase 4 | Pending |
+| NET-07 | Phase 5 | Pending |
+| NET-08 | Phase 5 | Pending |
+| NET-09 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 32 total
-- Mapped to phases: 0
-- Unmapped: 32 ⚠️
+- Mapped to phases: 32
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after roadmap creation*
