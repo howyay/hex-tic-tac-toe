@@ -1,8 +1,12 @@
 <script lang="ts">
   import HexCanvas from './components/HexCanvas.svelte';
+  import DebugOverlay from './components/DebugOverlay.svelte';
+
+  let debugActive = $state(false);
 </script>
 
-<HexCanvas />
+<HexCanvas bind:debugActive />
+<DebugOverlay active={debugActive} />
 
 <style>
   :global(html, body, #app) {

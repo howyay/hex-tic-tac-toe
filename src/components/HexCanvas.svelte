@@ -4,9 +4,16 @@
   import { panCamera, zoomAtPoint, screenToWorld } from '../lib/render/camera';
   import { pixelToHex, hexRound } from '../lib/hex/math';
 
+  let { debugActive = $bindable(false) }: { debugActive?: boolean } = $props();
+
   const HEX_SIZE = 30;
 
   const state = createGridState();
+
+  // Sync debugCoords state to bindable prop
+  $effect(() => {
+    debugActive = state.debugCoords;
+  });
 
   let canvas: HTMLCanvasElement;
   let lastMouseX = 0;
