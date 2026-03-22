@@ -1,15 +1,12 @@
 import type { HexCoord, Point, Camera, Player, GameStatus } from '../hex/types';
+import { DARK_THEME, type ThemeColors } from '../theme/colors';
 import { hexToPixel, hexCorners } from '../hex/math';
 import { getVisibleHexes } from '../hex/viewport';
 import { drawEdgeFade, drawLODDot } from './effects';
 import { drawX, drawO, drawWinHighlight, drawRejectionFlash, getPlayerColor } from './stones';
 
-const GRID_STROKE = 'rgba(255, 255, 255, 0.12)';
-const BACKGROUND = '#1a1a2e';
-const LOD_DOT_COLOR = 'rgba(255, 255, 255, 0.2)';
 const LOD_DOT_RADIUS = 3;
 const LOD_THRESHOLD = 0.4;
-const DEBUG_TEXT_COLOR = 'rgba(255, 255, 255, 0.5)';
 const EDGE_FADE_SIZE = 64;
 
 /** Apply camera transform to the canvas context */
@@ -53,10 +50,11 @@ export function drawGrid(
   hexSize: number,
   _camera: Camera,
   zoom: number,
+  colors: ThemeColors = DARK_THEME,
 ): void {
   if (zoom >= LOD_THRESHOLD) {
     // Full hex outlines
-    ctx.strokeStyle = GRID_STROKE;
+    ctx.strokeStyle = colors.gridStroke;
     ctx.lineWidth = 1;
     for (let i = 0; i < hexes.length; i++) {
       const center = hexToPixel(hexes[i], hexSize);
@@ -73,7 +71,7 @@ export function drawGrid(
     // LOD dot mode at far zoom
     for (let i = 0; i < hexes.length; i++) {
       const center = hexToPixel(hexes[i], hexSize);
-      drawLODDot(ctx, center, LOD_DOT_RADIUS, LOD_DOT_COLOR);
+      drawLODDot(ctx, center, LOD_DOT_RADIUS, colors.lodDot);
     }
   }
 }
@@ -93,11 +91,12 @@ export function render(
   winningLine?: HexCoord[],
   winner?: Player | null,
   rejectedHex?: HexCoord | null,
+  colors: ThemeColors = DARK_THEME,
 ): void {
   // 1. Clear canvas with background color
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  ctx.fillStyle = BACKGROUND;
+  ctx.fillStyle = colors.background;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
   // 2. Apply camera transform
@@ -107,7 +106,7 @@ export function render(
   const hexes = getVisibleHexes(camera, canvasWidth, canvasHeight, hexSize);
 
   // 4. Draw hex grid
-  drawGrid(ctx, hexes, hexSize, camera, camera.zoom);
+  drawGrid(ctx, hexes, hexSize, camera, camera.zoom, colors);
 
   // 4b. Draw placed stones
   if (board) {
@@ -115,16 +114,16 @@ export function render(
       const parts = key.split(',').map(Number);
       const center = hexToPixel({ q: parts[0], r: parts[1] }, hexSize);
       if (player === 'X') {
-        drawX(ctx, center, hexSize);
+        drawX(ctx, center, hexSize, colors.playerX);
       } else {
-        drawO(ctx, center, hexSize);
+        drawO(ctx, center, hexSize, colors.playerO);
       }
     }
   }
 
   // 4c. Draw win highlight
   if (status === 'won' && winningLine && winner) {
-    const playerColor = getPlayerColor(winner);
+    const playerColor = getPlayerColor(winner, colors);
     for (const coord of winningLine) {
       const center = hexToPixel(coord, hexSize);
       drawWinHighlight(ctx, center, hexSize, playerColor);
@@ -134,7 +133,7 @@ export function render(
   // 4d. Draw rejection flash
   if (rejectedHex) {
     const center = hexToPixel(rejectedHex, hexSize);
-    drawRejectionFlash(ctx, center, hexSize);
+    drawRejectionFlash(ctx, center, hexSize, colors.rejectionFlash);
   }
 
   // 5. Draw hover preview if hoveredHex is set (only during play, only on empty hexes)
@@ -142,8 +141,8 @@ export function render(
     const isOccupied = board ? board.has(`${hoveredHex.q},${hoveredHex.r}`) : false;
     if (!isOccupied) {
       const hoverColor = currentPlayer === 'O'
-        ? 'rgba(239, 83, 80, 0.3)'
-        : 'rgba(79, 195, 247, 0.3)';
+        ? colors.playerOHover
+        : colors.playerXHover;
       const hoverCenter = hexToPixel(hoveredHex, hexSize);
       if (camera.zoom >= LOD_THRESHOLD) {
         drawHex(ctx, hoverCenter, hexSize, 'transparent', hoverColor);
@@ -158,12 +157,12 @@ export function render(
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   // 7. Draw edge fade overlay
-  drawEdgeFade(ctx, canvasWidth, canvasHeight, EDGE_FADE_SIZE);
+  drawEdgeFade(ctx, canvasWidth, canvasHeight, EDGE_FADE_SIZE, colors.edgeFadeOpaque, colors.edgeFadeTransparent);
 
   // 8. Draw debug coordinate labels if enabled
   if (debugCoords && camera.zoom >= LOD_THRESHOLD) {
     ctx.font = '10px system-ui';
-    ctx.fillStyle = DEBUG_TEXT_COLOR;
+    ctx.fillStyle = colors.debugText;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (let i = 0; i < hexes.length; i++) {

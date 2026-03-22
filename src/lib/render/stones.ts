@@ -1,24 +1,22 @@
 import type { Point, Player } from '../hex/types';
+import type { ThemeColors } from '../theme/colors';
 import { hexCorners } from '../hex/math';
 
-const PLAYER_X_COLOR = '#4fc3f7';
-const PLAYER_O_COLOR = '#ef5350';
 const MARK_SCALE = 0.55;
 const MARK_STROKE_WIDTH = 3;
 const WIN_GLOW_BLUR = 15;
 const WIN_GLOW_STROKE_WIDTH = 3;
-const REJECTION_FLASH_COLOR = 'rgba(255, 80, 80, 0.4)';
 
 /** Get the color for a given player */
-export function getPlayerColor(player: Player): string {
-  return player === 'X' ? PLAYER_X_COLOR : PLAYER_O_COLOR;
+export function getPlayerColor(player: Player, colors: ThemeColors): string {
+  return player === 'X' ? colors.playerX : colors.playerO;
 }
 
 /** Draw an X mark (two crossed lines) at the given center */
-export function drawX(ctx: CanvasRenderingContext2D, center: Point, size: number): void {
+export function drawX(ctx: CanvasRenderingContext2D, center: Point, size: number, color: string): void {
   const r = size * MARK_SCALE;
   ctx.save();
-  ctx.strokeStyle = PLAYER_X_COLOR;
+  ctx.strokeStyle = color;
   ctx.lineWidth = MARK_STROKE_WIDTH;
   ctx.lineCap = 'round';
   ctx.beginPath();
@@ -31,10 +29,10 @@ export function drawX(ctx: CanvasRenderingContext2D, center: Point, size: number
 }
 
 /** Draw an O mark (circle) at the given center */
-export function drawO(ctx: CanvasRenderingContext2D, center: Point, size: number): void {
+export function drawO(ctx: CanvasRenderingContext2D, center: Point, size: number, color: string): void {
   const r = size * MARK_SCALE;
   ctx.save();
-  ctx.strokeStyle = PLAYER_O_COLOR;
+  ctx.strokeStyle = color;
   ctx.lineWidth = MARK_STROKE_WIDTH;
   ctx.lineCap = 'round';
   ctx.beginPath();
@@ -71,10 +69,11 @@ export function drawRejectionFlash(
   ctx: CanvasRenderingContext2D,
   center: Point,
   size: number,
+  color: string,
 ): void {
   const corners = hexCorners(center, size);
   ctx.save();
-  ctx.fillStyle = REJECTION_FLASH_COLOR;
+  ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(corners[0].x, corners[0].y);
   for (let i = 1; i < 6; i++) {
