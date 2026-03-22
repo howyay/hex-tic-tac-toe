@@ -51,8 +51,7 @@ created: 2026-03-22
 
 ## Wave 0 Requirements
 
-- [ ] `src/lib/game/__tests__/game-state.test.ts` — stubs for GAME-01, GAME-02 (turn rules)
-- [ ] `src/lib/game/__tests__/win-detection.test.ts` — stubs for GAME-03, GAME-04 (win detection on 3 axes)
+- [ ] `src/lib/game/rules.test.ts` — stubs for GAME-01 through GAME-05 (turn rules, win detection on 3 axes, mid-turn win)
 
 *Note: vitest already installed from Phase 1. No new infrastructure needed.*
 
