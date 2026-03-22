@@ -30,11 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can scroll-wheel to zoom in and out smoothly, with hexes scaling correctly
   4. Only hexes within the visible viewport are drawn (zooming out does not cause frame drops)
   5. Hovering over a hex highlights it with a preview color
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Scaffold project + hex math + camera math with TDD
+- [ ] 01-02-PLAN.md — Canvas renderer + HexCanvas component with pan/zoom
+- [ ] 01-03-PLAN.md — Hover/debug polish + visual verification checkpoint
 
 ### Phase 2: Game Rules and Local Play
 **Goal**: Two players sharing one browser can play a complete game of hex Connect6 with correct rules, win detection, and rematch -- a fully playable local prototype
@@ -102,7 +103,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Hex Grid Engine | 0/0 | Not started | - |
+| 1. Hex Grid Engine | 0/3 | Planning complete | - |
 | 2. Game Rules and Local Play | 0/0 | Not started | - |
 | 3. Theme and Touch Polish | 0/0 | Not started | - |
 | 4. WebRTC Multiplayer | 0/0 | Not started | - |
