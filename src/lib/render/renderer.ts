@@ -1,14 +1,14 @@
-import type { HexCoord, Point, Camera } from '../hex/types';
+import type { HexCoord, Point, Camera, Player, GameStatus } from '../hex/types';
 import { hexToPixel, hexCorners } from '../hex/math';
 import { getVisibleHexes } from '../hex/viewport';
 import { drawEdgeFade, drawLODDot } from './effects';
+import { drawX, drawO, drawWinHighlight, drawRejectionFlash, getPlayerColor } from './stones';
 
 const GRID_STROKE = 'rgba(255, 255, 255, 0.12)';
 const BACKGROUND = '#1a1a2e';
 const LOD_DOT_COLOR = 'rgba(255, 255, 255, 0.2)';
 const LOD_DOT_RADIUS = 3;
 const LOD_THRESHOLD = 0.4;
-const HOVER_COLOR = 'rgba(79, 195, 247, 0.3)'; // Player X default for Phase 1
 const DEBUG_TEXT_COLOR = 'rgba(255, 255, 255, 0.5)';
 const EDGE_FADE_SIZE = 64;
 
@@ -87,6 +87,12 @@ export function render(
   hexSize: number,
   hoveredHex: HexCoord | null,
   debugCoords: boolean,
+  board?: Map<string, Player>,
+  currentPlayer?: Player,
+  status?: GameStatus,
+  winningLine?: HexCoord[],
+  winner?: Player | null,
+  rejectedHex?: HexCoord | null,
 ): void {
   // 1. Clear canvas with background color
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -103,14 +109,48 @@ export function render(
   // 4. Draw hex grid
   drawGrid(ctx, hexes, hexSize, camera, camera.zoom);
 
-  // 5. Draw hover preview if hoveredHex is set
-  if (hoveredHex !== null) {
-    const hoverCenter = hexToPixel(hoveredHex, hexSize);
-    if (camera.zoom >= LOD_THRESHOLD) {
-      drawHex(ctx, hoverCenter, hexSize, 'transparent', HOVER_COLOR);
-    } else {
-      // In LOD mode, draw a slightly larger/brighter dot for hover
-      drawLODDot(ctx, hoverCenter, LOD_DOT_RADIUS + 2, HOVER_COLOR);
+  // 4b. Draw placed stones
+  if (board) {
+    for (const [key, player] of board) {
+      const parts = key.split(',').map(Number);
+      const center = hexToPixel({ q: parts[0], r: parts[1] }, hexSize);
+      if (player === 'X') {
+        drawX(ctx, center, hexSize);
+      } else {
+        drawO(ctx, center, hexSize);
+      }
+    }
+  }
+
+  // 4c. Draw win highlight
+  if (status === 'won' && winningLine && winner) {
+    const playerColor = getPlayerColor(winner);
+    for (const coord of winningLine) {
+      const center = hexToPixel(coord, hexSize);
+      drawWinHighlight(ctx, center, hexSize, playerColor);
+    }
+  }
+
+  // 4d. Draw rejection flash
+  if (rejectedHex) {
+    const center = hexToPixel(rejectedHex, hexSize);
+    drawRejectionFlash(ctx, center, hexSize);
+  }
+
+  // 5. Draw hover preview if hoveredHex is set (only during play, only on empty hexes)
+  if (hoveredHex !== null && status !== 'won') {
+    const isOccupied = board ? board.has(`${hoveredHex.q},${hoveredHex.r}`) : false;
+    if (!isOccupied) {
+      const hoverColor = currentPlayer === 'O'
+        ? 'rgba(239, 83, 80, 0.3)'
+        : 'rgba(79, 195, 247, 0.3)';
+      const hoverCenter = hexToPixel(hoveredHex, hexSize);
+      if (camera.zoom >= LOD_THRESHOLD) {
+        drawHex(ctx, hoverCenter, hexSize, 'transparent', hoverColor);
+      } else {
+        // In LOD mode, draw a slightly larger/brighter dot for hover
+        drawLODDot(ctx, hoverCenter, LOD_DOT_RADIUS + 2, hoverColor);
+      }
     }
   }
 

@@ -1,18 +1,34 @@
 <script lang="ts">
   import { createGridState } from '../lib/state/grid-state.svelte';
+  import type { GameStateAPI } from '../lib/state/game-state.svelte';
   import { render } from '../lib/render/renderer';
   import { panCamera, zoomAtPoint, screenToWorld } from '../lib/render/camera';
   import { pixelToHex, hexRound } from '../lib/hex/math';
 
-  let { debugActive = $bindable(false) }: { debugActive?: boolean } = $props();
+  let { debugActive = $bindable(false), gameState }: { debugActive?: boolean; gameState?: GameStateAPI } = $props();
 
   const HEX_SIZE = 30;
+  const CLICK_THRESHOLD = 5;
 
   const state = createGridState();
+
+  let dragDistance = 0;
 
   // Sync debugCoords state to bindable prop
   $effect(() => {
     debugActive = state.debugCoords;
+  });
+
+  // Trigger redraw when game state changes
+  $effect(() => {
+    if (gameState) {
+      // Touch reactive properties to track them
+      gameState.board;
+      gameState.status;
+      gameState.rejectedHex;
+      gameState.currentPlayer;
+      state.needsRedraw = true;
+    }
   });
 
   let canvas: HTMLCanvasElement;
@@ -48,6 +64,12 @@
           HEX_SIZE,
           state.hoveredHex,
           state.debugCoords,
+          gameState?.board,
+          gameState?.currentPlayer,
+          gameState?.status,
+          gameState?.winningLine,
+          gameState?.winner,
+          gameState?.rejectedHex,
         );
         state.needsRedraw = false;
       }
@@ -78,6 +100,8 @@
 
   function handleMouseDown(e: MouseEvent) {
     if (e.button !== 0) return; // left button only
+    if (gameState?.status === 'won') return; // D-06: board freeze on win
+    dragDistance = 0;
     state.isPanning = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
@@ -85,6 +109,7 @@
 
   function handleMouseMove(e: MouseEvent) {
     if (state.isPanning) {
+      dragDistance += Math.abs(e.clientX - lastMouseX) + Math.abs(e.clientY - lastMouseY);
       const deltaX = e.clientX - lastMouseX;
       const deltaY = e.clientY - lastMouseY;
       state.camera = panCamera(state.camera, deltaX, deltaY);
@@ -101,7 +126,16 @@
     }
   }
 
-  function handleMouseUp() {
+  function handleMouseUp(e: MouseEvent) {
+    if (state.isPanning && dragDistance < CLICK_THRESHOLD && gameState && gameState.status === 'playing') {
+      const worldPoint = screenToWorld(
+        { x: e.offsetX, y: e.offsetY },
+        state.camera,
+      );
+      const fractional = pixelToHex(worldPoint, HEX_SIZE);
+      const hex = hexRound(fractional.q, fractional.r);
+      gameState.placeStone(hex, state);
+    }
     state.isPanning = false;
   }
 
@@ -112,6 +146,7 @@
 
   function handleWheel(e: WheelEvent) {
     e.preventDefault();
+    if (gameState?.status === 'won') return; // D-06: zoom freeze on win
     const zoomDelta = e.deltaY * 0.001;
     const cursorPoint = { x: e.offsetX, y: e.offsetY };
     state.camera = zoomAtPoint(state.camera, cursorPoint, zoomDelta);
@@ -125,5 +160,5 @@
   onmouseup={handleMouseUp}
   onmouseleave={handleMouseLeave}
   onwheel={handleWheel}
-  style="width: 100%; height: 100%; display: block; cursor: {state.isPanning ? 'grabbing' : 'grab'};"
+  style="width: 100%; height: 100%; display: block; cursor: {gameState?.status === 'won' ? 'default' : state.isPanning ? 'grabbing' : 'grab'};"
 ></canvas>
