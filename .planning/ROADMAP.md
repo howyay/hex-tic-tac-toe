@@ -63,10 +63,12 @@ Plans:
   2. On a touch device, tapping a hex places a stone -- distinct from dragging to pan
   3. On a touch device, pinch gesture zooms the board in and out smoothly
   4. The UI is minimal and clean -- board and status information only, no visual clutter
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — ThemeColors type system + canvas render function refactor to accept theme colors
+- [ ] 03-02-PLAN.md — Theme state, CSS custom properties, ThemeToggle component, DOM overlay theming, App wiring
+- [ ] 03-03-PLAN.md — Touch gesture handlers (tap/drag/pinch) + visual verification checkpoint
 
 ### Phase 4: WebRTC Multiplayer
 **Goal**: Two players on separate devices can connect via a shared link and play a complete game over a peer-to-peer WebRTC connection
@@ -106,6 +108,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Hex Grid Engine | 3/3 | Complete | - |
 | 2. Game Rules and Local Play | 3/3 | Complete   | 2026-03-22 |
-| 3. Theme and Touch Polish | 0/0 | Not started | - |
+| 3. Theme and Touch Polish | 0/3 | Not started | - |
 | 4. WebRTC Multiplayer | 0/0 | Not started | - |
 | 5. Turn Timer | 0/0 | Not started | - |
