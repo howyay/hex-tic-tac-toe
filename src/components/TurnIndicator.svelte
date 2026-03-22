@@ -1,11 +1,15 @@
 <script lang="ts">
   let { currentPlayer, placementsThisTurn, maxPlacements, visible = true }:
     { currentPlayer: 'X' | 'O'; placementsThisTurn: number; maxPlacements: number; visible?: boolean } = $props();
+
+  const playerColor = $derived(currentPlayer === 'X' ? '#4fc3f7' : '#ef5350');
 </script>
 
-<div class="turn-indicator" style:display={visible ? 'block' : 'none'}>
-  <span class="player-letter" style="color: {currentPlayer === 'X' ? '#4fc3f7' : '#ef5350'}">{currentPlayer}</span> — {placementsThisTurn + 1} of {maxPlacements}
+{#if visible}
+<div class="turn-indicator">
+  <span class="player-letter" style:color={playerColor}>{currentPlayer}</span> — {placementsThisTurn + 1} of {maxPlacements}
 </div>
+{/if}
 
 <style>
   .turn-indicator {
