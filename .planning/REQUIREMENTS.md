@@ -44,7 +44,7 @@
 - [x] **UI-02**: Placement counter shows how many stones remain this turn (e.g., "2 of 2")
 - [x] **UI-03**: Move counter tracks total moves played
 - [x] **UI-04**: Light and dark theme toggle
-- [ ] **UI-05**: Theme preference persisted in localStorage
+- [x] **UI-05**: Theme preference persisted in localStorage
 - [ ] **UI-06**: Touch-friendly: tap to place stone on mobile
 - [ ] **UI-07**: Touch gestures: drag to pan, pinch to zoom — distinct from tap-to-place
 - [x] **UI-08**: Minimal, clean aesthetic — board and status only, no clutter
@@ -106,7 +106,7 @@
 | UI-02 | Phase 2 | Complete |
 | UI-03 | Phase 2 | Complete |
 | UI-04 | Phase 3 | Complete |
-| UI-05 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Complete |
 | UI-06 | Phase 3 | Pending |
 | UI-07 | Phase 3 | Pending |
 | UI-08 | Phase 3 | Complete |

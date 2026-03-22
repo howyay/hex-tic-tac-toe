@@ -67,7 +67,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — ThemeColors type system + canvas render function refactor to accept theme colors
-- [ ] 03-02-PLAN.md — Theme state, CSS custom properties, ThemeToggle component, DOM overlay theming, App wiring
+- [x] 03-02-PLAN.md — Theme state, CSS custom properties, ThemeToggle component, DOM overlay theming, App wiring
 - [ ] 03-03-PLAN.md — Touch gesture handlers (tap/drag/pinch) + visual verification checkpoint
 
 ### Phase 4: WebRTC Multiplayer
