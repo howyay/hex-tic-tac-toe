@@ -47,11 +47,12 @@ Plans:
   3. A game over screen shows the winner and both players can trigger a rematch (first player swaps on rematch)
   4. A turn indicator always shows whose turn it is (X or O) and how many placements remain this turn (e.g., "1 of 2")
   5. A move counter tracks total moves played in the current game
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — TDD game rules: types, pure logic functions, win detection with full test coverage
+- [ ] 02-02-PLAN.md — Reactive game state, stone rendering, canvas click-to-place integration
+- [ ] 02-03-PLAN.md — DOM overlays (turn indicator, move counter, game over) + App wiring + visual verification
 
 ### Phase 3: Theme and Touch Polish
 **Goal**: The game looks clean and minimal with light/dark theme support, and is fully playable on touch devices with correct gesture handling
@@ -103,8 +104,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Hex Grid Engine | 0/3 | Planning complete | - |
-| 2. Game Rules and Local Play | 0/0 | Not started | - |
+| 1. Hex Grid Engine | 3/3 | Complete | - |
+| 2. Game Rules and Local Play | 0/3 | Planning complete | - |
 | 3. Theme and Touch Polish | 0/0 | Not started | - |
 | 4. WebRTC Multiplayer | 0/0 | Not started | - |
 | 5. Turn Timer | 0/0 | Not started | - |
