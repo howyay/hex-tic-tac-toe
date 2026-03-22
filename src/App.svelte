@@ -4,14 +4,20 @@
   import TurnIndicator from './components/TurnIndicator.svelte';
   import MoveCounter from './components/MoveCounter.svelte';
   import GameOverlay from './components/GameOverlay.svelte';
+  import ThemeToggle from './components/ThemeToggle.svelte';
   import { createGameState } from './lib/state/game-state.svelte';
+  import { createThemeState } from './lib/theme/theme-state.svelte';
+  import { DARK_THEME, LIGHT_THEME } from './lib/theme/colors';
 
   let debugActive = $state(false);
   const gameState = createGameState();
+  const themeState = createThemeState();
+  const themeColors = $derived(themeState.theme === 'dark' ? DARK_THEME : LIGHT_THEME);
 </script>
 
 <div class="game-container">
-  <HexCanvas bind:debugActive {gameState} />
+  <ThemeToggle theme={themeState.theme} onToggle={() => themeState.toggle()} />
+  <HexCanvas bind:debugActive {gameState} {themeColors} />
   <TurnIndicator
     currentPlayer={gameState.currentPlayer}
     placementsThisTurn={gameState.placementsThisTurn}

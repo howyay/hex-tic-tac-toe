@@ -12,7 +12,7 @@
     font-size: 16px;
     font-weight: 400;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-muted);
     z-index: 10;
     font-family: system-ui, -apple-system, sans-serif;
     pointer-events: none;

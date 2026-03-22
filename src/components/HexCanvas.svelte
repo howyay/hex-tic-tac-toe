@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { GameStateAPI } from '../lib/state/game-state.svelte';
+  import type { ThemeColors } from '../lib/theme/colors';
   import { render } from '../lib/render/renderer';
   import { panCamera, zoomAtPoint, screenToWorld } from '../lib/render/camera';
   import { pixelToHex, hexRound } from '../lib/hex/math';
 
-  let { debugActive = $bindable(false), gameState }: { debugActive?: boolean; gameState: GameStateAPI } = $props();
+  let { debugActive = $bindable(false), gameState, themeColors }: { debugActive?: boolean; gameState: GameStateAPI; themeColors: ThemeColors } = $props();
 
   const HEX_SIZE = 30;
   const CLICK_THRESHOLD = 5;
@@ -25,6 +26,7 @@
     gameState.status;
     gameState.rejectedHex;
     gameState.currentPlayer;
+    themeColors;
     state.needsRedraw = true;
   });
 
@@ -67,6 +69,7 @@
           gameState.winningLine,
           gameState.winner,
           gameState.rejectedHex,
+          themeColors,
         );
         state.needsRedraw = false;
       }
@@ -157,5 +160,5 @@
   onmouseup={handleMouseUp}
   onmouseleave={handleMouseLeave}
   onwheel={handleWheel}
-  style="width: 100%; height: 100%; display: block; cursor: {gameState.status === 'won' ? 'default' : state.isPanning ? 'grabbing' : 'grab'};"
+  style="width: 100%; height: 100%; display: block; touch-action: none; cursor: {gameState.status === 'won' ? 'default' : state.isPanning ? 'grabbing' : 'grab'};"
 ></canvas>

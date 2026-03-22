@@ -20,7 +20,7 @@
     position: absolute;
     inset: 0;
     z-index: 20;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--color-gameover-bg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -37,7 +37,7 @@
     font-size: 28px;
     font-weight: 600;
     line-height: 1.2;
-    color: #ffffff;
+    color: var(--color-text);
     font-family: system-ui, -apple-system, sans-serif;
   }
   .rematch-button {
@@ -45,14 +45,14 @@
     font-size: 16px;
     font-weight: 600;
     font-family: system-ui, -apple-system, sans-serif;
-    background: #4fc3f7;
-    color: #1a1a2e;
+    background: var(--color-button-bg);
+    color: var(--color-button-text);
     border: none;
     border-radius: 4px;
     padding: 8px 24px;
     cursor: pointer;
   }
   .rematch-button:hover {
-    background: #81d4fa;
+    background: var(--color-button-hover);
   }
 </style>
