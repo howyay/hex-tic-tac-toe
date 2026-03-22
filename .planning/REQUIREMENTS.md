@@ -7,11 +7,11 @@
 
 ### Grid & Board
 
-- [ ] **GRID-01**: Hex grid rendered on HTML5 Canvas using axial coordinates (q, r)
-- [ ] **GRID-02**: Grid is unbounded — pieces can be placed at any hex position
-- [ ] **GRID-03**: Only hexes within the visible viewport are rendered (viewport culling)
+- [x] **GRID-01**: Hex grid rendered on HTML5 Canvas using axial coordinates (q, r)
+- [x] **GRID-02**: Grid is unbounded — pieces can be placed at any hex position
+- [x] **GRID-03**: Only hexes within the visible viewport are rendered (viewport culling)
 - [ ] **GRID-04**: User can pan the board by click-dragging (desktop) or touch-dragging (mobile)
-- [ ] **GRID-05**: User can zoom in/out via scroll wheel (desktop) or pinch gesture (mobile)
+- [x] **GRID-05**: User can zoom in/out via scroll wheel (desktop) or pinch gesture (mobile)
 - [ ] **GRID-06**: Hex under cursor/finger shows hover preview of current player's stone color
 
 ### Game Logic
@@ -87,11 +87,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRID-01 | Phase 1 | Pending |
-| GRID-02 | Phase 1 | Pending |
-| GRID-03 | Phase 1 | Pending |
+| GRID-01 | Phase 1 | Complete |
+| GRID-02 | Phase 1 | Complete |
+| GRID-03 | Phase 1 | Complete |
 | GRID-04 | Phase 1 | Pending |
-| GRID-05 | Phase 1 | Pending |
+| GRID-05 | Phase 1 | Complete |
 | GRID-06 | Phase 1 | Pending |
 | GAME-01 | Phase 2 | Pending |
 | GAME-02 | Phase 2 | Pending |

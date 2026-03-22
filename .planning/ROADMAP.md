@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Scaffold project + hex math + camera math with TDD
+- [x] 01-01-PLAN.md — Scaffold project + hex math + camera math with TDD
 - [ ] 01-02-PLAN.md — Canvas renderer + HexCanvas component with pan/zoom
 - [ ] 01-03-PLAN.md — Hover/debug polish + visual verification checkpoint
 
