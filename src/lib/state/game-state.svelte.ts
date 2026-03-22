@@ -1,5 +1,5 @@
 import type { HexCoord, Player, GameStatus } from '../hex/types';
-import type { GridState } from './grid-state.svelte';
+import { createGridState } from './grid-state.svelte';
 import { applyMove, applyRematch, createInitialSnapshot, isValidMove, coordKey } from '../game/rules';
 import { DEFAULT_CAMERA } from '../render/camera';
 
@@ -7,6 +7,8 @@ export function createGameState() {
   let snapshot = $state(createInitialSnapshot('X'));
   let rejectedHex = $state<HexCoord | null>(null);
   let rejectedTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const grid = createGridState();
 
   const currentPlayer = $derived(snapshot.currentPlayer);
   const board = $derived(snapshot.board);
@@ -17,7 +19,7 @@ export function createGameState() {
   const winner = $derived(snapshot.winner);
   const winningLine = $derived(snapshot.winningLine);
 
-  function placeStone(hex: HexCoord, gridState: GridState): void {
+  function placeStone(hex: HexCoord): void {
     if (!isValidMove(snapshot, hex)) {
       // If hex is occupied, show rejection flash
       if (snapshot.board.has(coordKey(hex))) {
@@ -26,25 +28,25 @@ export function createGameState() {
         rejectedTimeout = setTimeout(() => {
           rejectedHex = null;
           rejectedTimeout = null;
-          gridState.needsRedraw = true;
+          grid.needsRedraw = true;
         }, 150);
-        gridState.needsRedraw = true;
+        grid.needsRedraw = true;
       }
       return;
     }
     snapshot = applyMove(snapshot, hex);
-    gridState.needsRedraw = true;
+    grid.needsRedraw = true;
   }
 
-  function rematch(gridState: GridState): void {
+  function rematch(): void {
     snapshot = applyRematch(snapshot);
     rejectedHex = null;
     if (rejectedTimeout) {
       clearTimeout(rejectedTimeout);
       rejectedTimeout = null;
     }
-    gridState.camera = DEFAULT_CAMERA;
-    gridState.needsRedraw = true;
+    grid.camera = DEFAULT_CAMERA;
+    grid.needsRedraw = true;
   }
 
   return {
@@ -57,6 +59,7 @@ export function createGameState() {
     get winner() { return winner; },
     get winningLine() { return winningLine; },
     get rejectedHex() { return rejectedHex; },
+    get gridState() { return grid; },
     placeStone,
     rematch,
   };

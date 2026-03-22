@@ -1,14 +1,37 @@
 <script lang="ts">
   import HexCanvas from './components/HexCanvas.svelte';
   import DebugOverlay from './components/DebugOverlay.svelte';
+  import TurnIndicator from './components/TurnIndicator.svelte';
+  import MoveCounter from './components/MoveCounter.svelte';
+  import GameOverlay from './components/GameOverlay.svelte';
+  import { createGameState } from './lib/state/game-state.svelte';
 
   let debugActive = $state(false);
+  const gameState = createGameState();
 </script>
 
-<HexCanvas bind:debugActive />
-<DebugOverlay active={debugActive} />
+<div class="game-container">
+  <HexCanvas bind:debugActive {gameState} />
+  <TurnIndicator
+    currentPlayer={gameState.currentPlayer}
+    placementsThisTurn={gameState.placementsThisTurn}
+    maxPlacements={gameState.maxPlacements}
+    visible={gameState.status === 'playing'}
+  />
+  <MoveCounter totalMoves={gameState.totalMoves} />
+  {#if gameState.status === 'won' && gameState.winner}
+    <GameOverlay winner={gameState.winner} onRematch={() => gameState.rematch()} />
+  {/if}
+  <DebugOverlay active={debugActive} />
+</div>
 
 <style>
+  .game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
   :global(html, body, #app) {
     margin: 0;
     padding: 0;
