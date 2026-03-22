@@ -16,15 +16,15 @@
 
 ### Game Logic
 
-- [ ] **GAME-01**: X places 1 stone on the first turn
-- [ ] **GAME-02**: After the first turn, players alternate placing 2 stones per turn
-- [ ] **GAME-03**: A player wins when they have 6 consecutive stones along any of the 3 hex axes
-- [ ] **GAME-04**: Win detection checks all 3 hex axes: horizontal (q-axis), and both diagonals (r-axis, s-axis)
-- [ ] **GAME-05**: Game ends immediately when a win is detected — no further placements accepted
+- [x] **GAME-01**: X places 1 stone on the first turn
+- [x] **GAME-02**: After the first turn, players alternate placing 2 stones per turn
+- [x] **GAME-03**: A player wins when they have 6 consecutive stones along any of the 3 hex axes
+- [x] **GAME-04**: Win detection checks all 3 hex axes: horizontal (q-axis), and both diagonals (r-axis, s-axis)
+- [x] **GAME-05**: Game ends immediately when a win is detected — no further placements accepted
 - [ ] **GAME-06**: Winning line of 6 stones is visually highlighted on the board
 - [ ] **GAME-07**: Game over screen displays the winner (X or O)
-- [ ] **GAME-08**: Both players can trigger a rematch without generating a new link
-- [ ] **GAME-09**: On rematch, first player alternates (loser goes first, or swap)
+- [x] **GAME-08**: Both players can trigger a rematch without generating a new link
+- [x] **GAME-09**: On rematch, first player alternates (loser goes first, or swap)
 
 ### Multiplayer
 
@@ -42,7 +42,7 @@
 
 - [ ] **UI-01**: Turn indicator shows whose turn it is (X or O)
 - [ ] **UI-02**: Placement counter shows how many stones remain this turn (e.g., "2 of 2")
-- [ ] **UI-03**: Move counter tracks total moves played
+- [x] **UI-03**: Move counter tracks total moves played
 - [ ] **UI-04**: Light and dark theme toggle
 - [ ] **UI-05**: Theme preference persisted in localStorage
 - [ ] **UI-06**: Touch-friendly: tap to place stone on mobile
@@ -93,18 +93,18 @@
 | GRID-04 | Phase 1 | Complete |
 | GRID-05 | Phase 1 | Complete |
 | GRID-06 | Phase 1 | Complete |
-| GAME-01 | Phase 2 | Pending |
-| GAME-02 | Phase 2 | Pending |
-| GAME-03 | Phase 2 | Pending |
-| GAME-04 | Phase 2 | Pending |
-| GAME-05 | Phase 2 | Pending |
+| GAME-01 | Phase 2 | Complete |
+| GAME-02 | Phase 2 | Complete |
+| GAME-03 | Phase 2 | Complete |
+| GAME-04 | Phase 2 | Complete |
+| GAME-05 | Phase 2 | Complete |
 | GAME-06 | Phase 2 | Pending |
 | GAME-07 | Phase 2 | Pending |
-| GAME-08 | Phase 2 | Pending |
-| GAME-09 | Phase 2 | Pending |
+| GAME-08 | Phase 2 | Complete |
+| GAME-09 | Phase 2 | Complete |
 | UI-01 | Phase 2 | Pending |
 | UI-02 | Phase 2 | Pending |
-| UI-03 | Phase 2 | Pending |
+| UI-03 | Phase 2 | Complete |
 | UI-04 | Phase 3 | Pending |
 | UI-05 | Phase 3 | Pending |
 | UI-06 | Phase 3 | Pending |

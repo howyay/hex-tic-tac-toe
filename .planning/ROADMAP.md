@@ -50,7 +50,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — TDD game rules: types, pure logic functions, win detection with full test coverage
+- [x] 02-01-PLAN.md — TDD game rules: types, pure logic functions, win detection with full test coverage
 - [ ] 02-02-PLAN.md — Reactive game state, stone rendering, canvas click-to-place integration
 - [ ] 02-03-PLAN.md — DOM overlays (turn indicator, move counter, game over) + App wiring + visual verification
 

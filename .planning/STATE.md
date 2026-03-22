@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-03-22T07:32:42.563Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-22T08:06:34.384Z"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Two players can connect via a shared link and play a complete game of hex Connect6 with correct rules and win detection.
-**Current focus:** Phase 01 — hex-grid-engine
+**Current focus:** Phase 02 — game-rules-and-local-play
 
 ## Current Position
 
-Phase: 01 (hex-grid-engine) — EXECUTING
-Plan: 3 of 3
+Phase: 02 (game-rules-and-local-play) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Plan: 3 of 3
 | Phase 01 P01 | 4min | 3 tasks | 18 files |
 | Phase 01 P02 | 2min | 2 tasks | 5 files |
 | Phase 01 P03 | 5min | 2 tasks | 4 files |
+| Phase 02 P01 | 4min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - [Phase 01]: LOD threshold at zoom < 0.4 switches to dot rendering per UI-SPEC D-07
 - [Phase 01]: ZOOM_MIN raised from 0.25 to 0.4 so hexes never enter LOD dot mode (user visual feedback)
 - [Phase 01]: Debug state exposed via $bindable prop pattern rather than shared store
+- [Phase 02]: Immutable snapshot pattern for game state: applyMove returns new GameSnapshot, never mutates
+- [Phase 02]: Win detection via axis-pair traversal from last-placed stone using HEX_DIRECTIONS
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T07:32:42.561Z
-Stopped at: Phase 2 UI-SPEC approved
-Resume file: .planning/phases/02-game-rules-and-local-play/02-UI-SPEC.md
+Last session: 2026-03-22T08:06:34.382Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None
