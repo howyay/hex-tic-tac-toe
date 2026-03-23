@@ -93,14 +93,21 @@ export function render(
   rejectedHex?: HexCoord | null,
   colors: ThemeColors = DARK_THEME,
 ): void {
-  // 1. Clear canvas with background color
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const dpr = window.devicePixelRatio || 1;
+
+  // 1. Clear canvas with background color (reset to DPR-scaled identity)
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   ctx.fillStyle = colors.background;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-  // 2. Apply camera transform
-  applyCamera(ctx, camera);
+  // 2. Apply camera transform (incorporate DPR scaling)
+  ctx.setTransform(
+    camera.zoom * dpr, 0,
+    0, camera.zoom * dpr,
+    camera.x * camera.zoom * dpr,
+    camera.y * camera.zoom * dpr,
+  );
 
   // 3. Get visible hexes via viewport culling
   const hexes = getVisibleHexes(camera, canvasWidth, canvasHeight, hexSize);
@@ -153,8 +160,8 @@ export function render(
     }
   }
 
-  // 6. Reset transform to screen space
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // 6. Reset transform to screen space (DPR-scaled identity)
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   // 7. Draw edge fade overlay
   drawEdgeFade(ctx, canvasWidth, canvasHeight, EDGE_FADE_SIZE, colors.edgeFadeOpaque, colors.edgeFadeTransparent);

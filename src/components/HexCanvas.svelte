@@ -52,10 +52,7 @@
     const dpr = window.devicePixelRatio || 1;
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.scale(dpr, dpr);
-    }
+    // DPR scaling is handled in renderer.ts via setTransform — no ctx.scale() here
     state.needsRedraw = true;
   }
 
