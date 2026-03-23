@@ -45,8 +45,8 @@
 - [x] **UI-03**: Move counter tracks total moves played
 - [x] **UI-04**: Light and dark theme toggle
 - [x] **UI-05**: Theme preference persisted in localStorage
-- [ ] **UI-06**: Touch-friendly: tap to place stone on mobile
-- [ ] **UI-07**: Touch gestures: drag to pan, pinch to zoom — distinct from tap-to-place
+- [x] **UI-06**: Touch-friendly: tap to place stone on mobile
+- [x] **UI-07**: Touch gestures: drag to pan, pinch to zoom — distinct from tap-to-place
 - [x] **UI-08**: Minimal, clean aesthetic — board and status only, no clutter
 
 ## v2 Requirements
@@ -107,8 +107,8 @@
 | UI-03 | Phase 2 | Complete |
 | UI-04 | Phase 3 | Complete |
 | UI-05 | Phase 3 | Complete |
-| UI-06 | Phase 3 | Pending |
-| UI-07 | Phase 3 | Pending |
+| UI-06 | Phase 3 | Complete |
+| UI-07 | Phase 3 | Complete |
 | UI-08 | Phase 3 | Complete |
 | NET-01 | Phase 4 | Pending |
 | NET-02 | Phase 4 | Pending |

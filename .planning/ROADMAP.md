@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Hex Grid Engine** - Canvas-rendered hex grid with axial coordinates, viewport culling, pan, and zoom
 - [x] **Phase 2: Game Rules and Local Play** - Complete Connect6 rules, win detection, game over, rematch as a local two-player game (completed 2026-03-22)
-- [ ] **Phase 3: Theme and Touch Polish** - Light/dark theme, touch input (tap-to-place vs drag-to-pan), minimal aesthetic
+- [x] **Phase 3: Theme and Touch Polish** - Light/dark theme, touch input (tap-to-place vs drag-to-pan), minimal aesthetic (completed 2026-03-23)
 - [ ] **Phase 4: WebRTC Multiplayer** - P2P connection via shareable link, host-authoritative state sync, connection status
 - [ ] **Phase 5: Turn Timer** - Configurable turn timer with synchronized countdown and auto-forfeit
 
@@ -68,7 +68,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — ThemeColors type system + canvas render function refactor to accept theme colors
 - [x] 03-02-PLAN.md — Theme state, CSS custom properties, ThemeToggle component, DOM overlay theming, App wiring
-- [ ] 03-03-PLAN.md — Touch gesture handlers (tap/drag/pinch) + visual verification checkpoint
+- [x] 03-03-PLAN.md — Touch gesture handlers (tap/drag/pinch) + visual verification checkpoint
 
 ### Phase 4: WebRTC Multiplayer
 **Goal**: Two players on separate devices can connect via a shared link and play a complete game over a peer-to-peer WebRTC connection
@@ -108,6 +108,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Hex Grid Engine | 3/3 | Complete | - |
 | 2. Game Rules and Local Play | 3/3 | Complete   | 2026-03-22 |
-| 3. Theme and Touch Polish | 1/3 | In Progress|  |
+| 3. Theme and Touch Polish | 3/3 | Complete   | 2026-03-23 |
 | 4. WebRTC Multiplayer | 0/0 | Not started | - |
 | 5. Turn Timer | 0/0 | Not started | - |
