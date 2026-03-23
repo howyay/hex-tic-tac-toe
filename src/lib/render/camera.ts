@@ -1,7 +1,7 @@
 import type { Point, Camera } from '../hex/types';
 
 export const ZOOM_MIN = 0.4;   // Never zoom past LOD threshold — hexes always render full detail
-export const ZOOM_MAX = 3.0;   // ~10 hexes visible per D-06
+export const ZOOM_MAX = 1.0;   // Default zoom is the max — no zooming in past default
 export const DEFAULT_CAMERA: Camera = { x: 0, y: 0, zoom: 1.0 };
 
 /** Convert screen-space point to world-space point */

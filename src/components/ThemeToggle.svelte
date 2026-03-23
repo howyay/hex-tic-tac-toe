@@ -11,22 +11,22 @@
 >
   {#if theme === 'dark'}
     <!-- Moon icon -->
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M6 0a6 6 0 0 0 0 12 8 8 0 0 1-6-6 6 6 0 0 1 6-6z" transform="translate(3, 2)" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   {:else}
     <!-- Sun icon -->
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <circle cx="8" cy="8" r="3" />
-      <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-        <line x1="8" y1="1" x2="8" y2="3" />
-        <line x1="8" y1="13" x2="8" y2="15" />
-        <line x1="1" y1="8" x2="3" y2="8" />
-        <line x1="13" y1="8" x2="15" y2="8" />
-        <line x1="3.05" y1="3.05" x2="4.46" y2="4.46" />
-        <line x1="11.54" y1="11.54" x2="12.95" y2="12.95" />
-        <line x1="3.05" y1="12.95" x2="4.46" y2="11.54" />
-        <line x1="11.54" y1="4.46" x2="12.95" y2="3.05" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="12" r="5" />
+      <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="1" x2="12" y2="4" />
+        <line x1="12" y1="20" x2="12" y2="23" />
+        <line x1="1" y1="12" x2="4" y2="12" />
+        <line x1="20" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
+        <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
+        <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
       </g>
     </svg>
   {/if}
