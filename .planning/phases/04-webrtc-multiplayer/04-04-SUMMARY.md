@@ -43,7 +43,7 @@ patterns-established:
 
 requirements-completed: [NET-01, NET-02, NET-03, NET-06]
 
-duration: 2min
+duration: 5min
 completed: 2026-03-24
 ---
 
@@ -53,11 +53,11 @@ completed: 2026-03-24
 
 ## Performance
 
-- **Duration:** 2 min
+- **Duration:** 5 min
 - **Started:** 2026-03-24T06:30:22Z
-- **Completed:** 2026-03-24T06:32:20Z
-- **Tasks:** 2 of 3 (Task 3 is human verification checkpoint)
-- **Files modified:** 3
+- **Completed:** 2026-03-24T06:40:00Z
+- **Tasks:** 3 of 3 (all complete, checkpoint approved)
+- **Files modified:** 5
 
 ## Accomplishments
 - WaitingOverlay shows host's shareable link with clipboard copy and "Copied!" feedback (2s)
@@ -71,12 +71,18 @@ Each task was committed atomically:
 
 1. **Task 1: WaitingOverlay and JoinOverlay components** - `3ae6715` (feat)
 2. **Task 2: Complete App.svelte wiring for online multiplayer** - `2807722` (feat)
-3. **Task 3: Verify end-to-end multiplayer flow** - checkpoint (human-verify, pending)
+3. **Task 3: Verify end-to-end multiplayer flow** - checkpoint (human-verify, approved)
+
+**Fix commits (post-checkpoint issues):**
+- `1bd3c92` - fix: host refresh goes to landing, guest sees board behind overlay, no flash on host create
+- `3712058` - fix: host refresh reconnects as host, all menus are overlays on dimmed board
 
 ## Files Created/Modified
 - `src/components/WaitingOverlay.svelte` - Host waiting screen with shareable link and clipboard copy
 - `src/components/JoinOverlay.svelte` - Guest join screen with ready/connecting/error states
 - `src/App.svelte` - Full view routing and online multiplayer orchestration
+- `src/components/LandingPage.svelte` - Refactored as overlay on dimmed board
+- `src/lib/network/connection.ts` - Minor fixes for host refresh handling
 
 ## Decisions Made
 - Used `activeGameState` derived to unify local and online game state for all shared components (HexCanvas, TurnIndicator, etc.)
@@ -86,20 +92,46 @@ Each task was committed atomically:
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] Host refresh dropped to landing instead of reconnecting as host**
+- **Found during:** Task 3 (human verification)
+- **Issue:** When host refreshed the page, they were sent back to the landing page instead of reconnecting as host with the same game ID
+- **Fix:** Host refresh now detects hash and reconnects as host, maintaining the shareable link
+- **Files modified:** src/App.svelte
+- **Committed in:** `1bd3c92`, `3712058`
+
+**2. [Rule 1 - Bug] Guest saw white background behind join overlay, not the board**
+- **Found during:** Task 3 (human verification)
+- **Issue:** Guest overlay had no board visible behind it, inconsistent with the host waiting overlay
+- **Fix:** Board renders behind all overlays including join and landing, with consistent dimming
+- **Files modified:** src/App.svelte, src/components/LandingPage.svelte
+- **Committed in:** `1bd3c92`, `3712058`
+
+**3. [Rule 1 - Bug] Flash of empty board when host created online game**
+- **Found during:** Task 3 (human verification)
+- **Issue:** Brief visual flash when transitioning from landing to online-host view
+- **Fix:** Eliminated flash by ensuring overlay renders immediately with board behind it
+- **Files modified:** src/App.svelte
+- **Committed in:** `1bd3c92`
+
+---
+
+**Total deviations:** 3 auto-fixed (3 bugs found during human verification)
+**Impact on plan:** All fixes necessary for correct UX. No scope creep.
 
 ## Issues Encountered
 
-None.
+Host refresh handling required two iterations to get right -- first attempt sent host to landing, second correctly reconnected as host.
 
 ## User Setup Required
 
 None - no external service configuration required.
 
 ## Next Phase Readiness
-- End-to-end multiplayer wiring complete, pending human verification checkpoint
-- All automated verification passes (svelte-check 0 errors, vitest 86/86 tests pass)
-- Ready for Phase 05 polish after checkpoint approval
+- End-to-end multiplayer verified and approved via human checkpoint
+- All automated verification passes (svelte-check 0 errors, vitest all tests pass)
+- Phase 04 complete -- ready for Phase 05 (Turn Timer)
 
 ---
 *Phase: 04-webrtc-multiplayer*

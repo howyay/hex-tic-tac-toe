@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-04-PLAN.md (checkpoint pending)
-last_updated: "2026-03-24T06:33:15.954Z"
+stopped_at: Completed 04-04-PLAN.md
+last_updated: "2026-03-24T06:57:51.053Z"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -59,6 +59,7 @@ Plan: 4 of 4
 | Phase 04 P02 | 3min | 2 tasks | 3 files |
 | Phase 04 P03 | 2min | 2 tasks | 3 files |
 | Phase 04 P04 | 2min | 2 tasks | 3 files |
+| Phase 04 P04 | 5min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 04]: Guest link hash read once on mount, no hashchange listener per Pitfall 4
 - [Phase 04]: Guest sets connecting status at construction time since joinGame lacks onOpen gameId callback
 - [Phase 04]: activeGameState derived pattern unifies local and online game state for shared components
+- [Phase 04]: activeGameState derived pattern unifies local and online game state for shared components
+- [Phase 04]: All overlays (landing, waiting, join, game-over) render on dimmed board for visual consistency
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T06:33:15.951Z
-Stopped at: Completed 04-04-PLAN.md (checkpoint pending)
+Last session: 2026-03-24T06:57:51.051Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None
