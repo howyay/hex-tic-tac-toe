@@ -123,6 +123,24 @@ export function applyMove(snapshot: GameSnapshot, hex: HexCoord): GameSnapshot {
 }
 
 /**
+ * Forfeit the current turn without placing any stones.
+ * Advances to the next player and resets placement count.
+ * Returns unchanged snapshot if game is already won.
+ */
+export function forfeitTurn(snapshot: GameSnapshot): GameSnapshot {
+  if (snapshot.status !== 'playing') {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    currentPlayer: snapshot.currentPlayer === 'X' ? 'O' : 'X',
+    placementsThisTurn: 0,
+    isFirstTurn: false,
+  };
+}
+
+/**
  * Apply a rematch: reset the board, loser goes first (D-10).
  * If no winner, swap from previous starting player.
  */

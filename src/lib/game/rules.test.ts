@@ -6,6 +6,7 @@ import {
   checkWinFromHex,
   applyMove,
   applyRematch,
+  forfeitTurn,
 } from './rules';
 import type { HexCoord } from '../hex/types';
 
@@ -272,6 +273,64 @@ describe('GAME-09: applyRematch after X wins sets loser (O) as starting player',
     const rematch = applyRematch(snap);
     expect(rematch.startingPlayer).toBe('O');
     expect(rematch.currentPlayer).toBe('O');
+  });
+});
+
+describe('NET-09: forfeitTurn advances turn without placing stones', () => {
+  it('forfeit on first turn (X, isFirstTurn=true) switches to O and clears isFirstTurn', () => {
+    const snap = createInitialSnapshot();
+    expect(snap.currentPlayer).toBe('X');
+    expect(snap.isFirstTurn).toBe(true);
+
+    const result = forfeitTurn(snap);
+    expect(result.currentPlayer).toBe('O');
+    expect(result.isFirstTurn).toBe(false);
+    expect(result.placementsThisTurn).toBe(0);
+    expect(result.board.size).toBe(0); // no stones placed
+  });
+
+  it('forfeit on normal turn (O, isFirstTurn=false) switches to X', () => {
+    let snap = createInitialSnapshot();
+    snap = applyMove(snap, { q: 0, r: 0 }); // X places, switches to O
+    expect(snap.currentPlayer).toBe('O');
+    expect(snap.isFirstTurn).toBe(false);
+
+    const result = forfeitTurn(snap);
+    expect(result.currentPlayer).toBe('X');
+    expect(result.placementsThisTurn).toBe(0);
+  });
+
+  it('forfeit mid-placement (O, placementsThisTurn=1) switches to X and resets placements', () => {
+    let snap = createInitialSnapshot();
+    snap = applyMove(snap, { q: 0, r: 0 }); // X places, switches to O
+    snap = applyMove(snap, { q: 1, r: 0 }); // O places 1 of 2
+    expect(snap.currentPlayer).toBe('O');
+    expect(snap.placementsThisTurn).toBe(1);
+
+    const result = forfeitTurn(snap);
+    expect(result.currentPlayer).toBe('X');
+    expect(result.placementsThisTurn).toBe(0);
+  });
+
+  it('forfeit on won game returns same snapshot unchanged', () => {
+    let snap = createInitialSnapshot();
+    // Build a won game: X wins with 6 on q-axis
+    snap = applyMove(snap, { q: 0, r: 0 });
+    snap = applyMove(snap, { q: -5, r: 3 });
+    snap = applyMove(snap, { q: -7, r: 1 });
+    snap = applyMove(snap, { q: 1, r: 0 });
+    snap = applyMove(snap, { q: 2, r: 0 });
+    snap = applyMove(snap, { q: -3, r: 5 });
+    snap = applyMove(snap, { q: -9, r: 2 });
+    snap = applyMove(snap, { q: 3, r: 0 });
+    snap = applyMove(snap, { q: 4, r: 0 });
+    snap = applyMove(snap, { q: -4, r: 7 });
+    snap = applyMove(snap, { q: -8, r: 4 });
+    snap = applyMove(snap, { q: 5, r: 0 });
+    expect(snap.status).toBe('won');
+
+    const result = forfeitTurn(snap);
+    expect(result).toBe(snap); // same reference
   });
 });
 
