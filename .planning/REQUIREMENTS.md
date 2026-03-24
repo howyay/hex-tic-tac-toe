@@ -30,9 +30,9 @@
 
 - [ ] **NET-01**: Host creates a game and receives a shareable link
 - [ ] **NET-02**: Guest joins by opening the shared link in their browser
-- [ ] **NET-03**: Connection established via WebRTC data channel using PeerJS
-- [ ] **NET-04**: Game state is synchronized directly between peers (no game server)
-- [ ] **NET-05**: Host validates all moves (host-authoritative model)
+- [x] **NET-03**: Connection established via WebRTC data channel using PeerJS
+- [x] **NET-04**: Game state is synchronized directly between peers (no game server)
+- [x] **NET-05**: Host validates all moves (host-authoritative model)
 - [ ] **NET-06**: Connection status indicator shows connected/disconnected state
 - [ ] **NET-07**: Host can set turn timer before game starts (30s, 60s, or unlimited)
 - [ ] **NET-08**: Timer countdown visible to both players during timed games
@@ -112,9 +112,9 @@
 | UI-08 | Phase 3 | Complete |
 | NET-01 | Phase 4 | Pending |
 | NET-02 | Phase 4 | Pending |
-| NET-03 | Phase 4 | Pending |
-| NET-04 | Phase 4 | Pending |
-| NET-05 | Phase 4 | Pending |
+| NET-03 | Phase 4 | Complete |
+| NET-04 | Phase 4 | Complete |
+| NET-05 | Phase 4 | Complete |
 | NET-06 | Phase 4 | Pending |
 | NET-07 | Phase 5 | Pending |
 | NET-08 | Phase 5 | Pending |

@@ -83,7 +83,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Message protocol types, snapshot serialization, PeerJS connection wrapper with tests
+- [x] 04-01-PLAN.md — Message protocol types, snapshot serialization, PeerJS connection wrapper with tests
 - [ ] 04-02-PLAN.md — Landing page component, CSS custom properties, App.svelte view routing
 - [ ] 04-03-PLAN.md — Network state, online game state (GameStateAPI-conformant), ConnectionStatus component
 - [ ] 04-04-PLAN.md — WaitingOverlay, JoinOverlay, App.svelte full wiring, end-to-end verification checkpoint
