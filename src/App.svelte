@@ -29,17 +29,26 @@
   const themeState = createThemeState();
   const themeColors = $derived(themeState.theme === 'dark' ? DARK_THEME : LIGHT_THEME);
 
-  // Active game state: selects between local and online
+  // Background game state for guest join screen (renders empty board behind overlay)
+  let guestBackgroundState = $state<GameStateAPI | null>(null);
+
+  // Active game state: selects between local and online, with background fallback for guest
   const activeGameState = $derived<GameStateAPI | null>(
     view === 'local-game' ? gameState :
-    (view === 'online-host' || view === 'online-guest') ? onlineGameState :
+    (view === 'online-host' || view === 'online-guest') ? (onlineGameState ?? guestBackgroundState) :
     null
   );
 
   // Detect guest link hash on mount (D-03) -- read ONCE, no hashchange listener
+  // Also check sessionStorage for host role to handle refresh correctly
   function detectInitialView(): AppView {
     const hash = window.location.hash.slice(1);
     if (hash.length >= 6) {
+      // Check if we're the host who refreshed (not a guest joining)
+      const storedRole = sessionStorage.getItem('hex-role');
+      if (storedRole === 'host') {
+        return 'landing'; // Host refreshed — go back to landing, clear hash
+      }
       gameId = hash;
       return 'online-guest';
     }
@@ -48,12 +57,18 @@
 
   let view = $state<AppView>(detectInitialView());
 
+  // Create background board for guest join screen so overlay is semi-transparent over the grid
+  if (view === 'online-guest') {
+    guestBackgroundState = createGameState();
+  }
+
   function startLocalGame() {
     gameState = createGameState();
     view = 'local-game';
   }
 
   function startOnlineGame() {
+    sessionStorage.setItem('hex-role', 'host');
     networkState = createNetworkState();
     onlineGameState = createOnlineGameState('host', null, networkState);
     view = 'online-host';
@@ -95,6 +110,7 @@
     gameId = null;
     joinStatus = 'ready';
     joinError = null;
+    sessionStorage.removeItem('hex-role');
     window.location.hash = '';
     view = 'landing';
   }
@@ -115,9 +131,13 @@
     ) && networkState?.status !== 'connected'
   );
 
-  // Whether the host waiting overlay should be shown
+  // Whether the host waiting overlay should be shown (including loading state before PeerJS connects)
   const showWaitingOverlay = $derived(
-    view === 'online-host' && onlineGameState?.waitingForGuest === true
+    view === 'online-host' && (
+      onlineGameState?.waitingForGuest === true ||
+      !onlineGameState ||
+      networkState?.status === 'disconnected'
+    )
   );
 
   // Whether the connection status should be shown (online game active, not in overlay)
