@@ -96,10 +96,11 @@ Plans:
   1. Before starting a game, the host can select a turn timer setting: 30 seconds, 60 seconds, or unlimited
   2. During timed games, both players see the same countdown timer that ticks in sync
   3. When the timer expires, the current player's remaining placements are automatically forfeited and the turn passes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
+- [ ] 05-01-PLAN.md — Timer types, forfeitTurn logic, protocol message types, tests
+- [ ] 05-02-PLAN.md — TimerSelector UI, TurnIndicator update, online game state timer integration, App wiring, verification
 
 ## Progress
 
@@ -112,4 +113,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Game Rules and Local Play | 3/3 | Complete   | 2026-03-22 |
 | 3. Theme and Touch Polish | 3/3 | Complete   | 2026-03-23 |
 | 4. WebRTC Multiplayer | 4/4 | Complete   | 2026-03-24 |
-| 5. Turn Timer | 0/0 | Not started | - |
+| 5. Turn Timer | 0/2 | Not started | - |
