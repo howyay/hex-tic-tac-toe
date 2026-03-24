@@ -133,6 +133,7 @@ The landing page shows a decorative hex grid in the background. This reuses the 
 | Connection status disconnected | "Disconnected" | Body size, red dot prefix (D-12) |
 | Error: game not found | "Game not found. The host may have left." | Shown when guest tries to join an invalid/expired game ID |
 | Error: connection failed | "Could not connect. Please try again." | Shown on PeerJS server error or network failure |
+| Back to Menu | "Back" | Text button in join overlay error state, underlined, `var(--color-text-muted)`, navigates to landing page |
 | Empty state | not applicable | Landing page is always populated; game board always visible |
 | Destructive confirmation | not applicable | No destructive actions in Phase 4 |
 
@@ -164,7 +165,7 @@ The landing page shows a decorative hex grid in the background. This reuses the 
 | JoinOverlay | Centered overlay with "Join Game" heading and "Join Game" button |
 | On Join click | Connect to host via PeerJS. Transition JoinOverlay to "Connecting..." state. |
 | On connection success | Remove JoinOverlay. Game starts. ConnectionStatus appears in top-left. |
-| On connection failure | Show error message in the overlay: "Game not found. The host may have left." with a "Back" link to landing page. |
+| On connection failure | Show error message in the overlay: "Game not found. The host may have left." with a "Back" text button to landing page. |
 
 ### Host Flow (D-06, D-08)
 
@@ -202,7 +203,7 @@ The landing page shows a decorative hex grid in the background. This reuses the 
 | Heading | "Join Game" at 20px semibold, `var(--color-text)` |
 | Button | "Join Game" button, same style as landing page buttons. 16px gap below heading. |
 | Connecting state | Button text changes to "Connecting..." and button becomes `pointer-events: none; opacity: 0.6` |
-| Error state | Button replaced with error text (Body size, `var(--color-status-disconnected)`) and a "Back" text button (`var(--color-text-muted)`, underlined, navigates to landing page) |
+| Error state | Button replaced with error text (Body size, `var(--color-status-disconnected)`) and a "Back" text button (Body size, `var(--color-text-muted)`, underlined, navigates to landing page) |
 
 ### Connection Status Indicator (D-11, D-12)
 
@@ -214,7 +215,7 @@ The landing page shows a decorative hex grid in the background. This reuses the 
 | Dot | `width: 8px; height: 8px; border-radius: 50%` (circle) |
 | Dot color | `var(--color-status-connected)` / `var(--color-status-connecting)` / `var(--color-status-disconnected)` |
 | Connecting dot | Pulsing animation: `opacity: 1 -> 0.4 -> 1` over 1.5s, infinite, ease-in-out |
-| Text | 14px regular (slightly smaller than Body to be unobtrusive), `var(--color-text-muted)` |
+| Text | 16px regular (Body), `var(--color-text-muted)` |
 | Gap | 8px between dot and text |
 | Visibility | Only visible during online games (hidden in local mode and on landing page) |
 | pointer-events | none (informational only, not interactive) |
