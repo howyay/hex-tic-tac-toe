@@ -31,7 +31,8 @@ export function createOnlineGameState(
   let timerExpired = $state(false);
   let shaking = $state(false);
   const timerWarning = $derived(timerRunning && timerRemaining <= TIMER_WARNING_THRESHOLD && timerRemaining > 0);
-  const timerActive = $derived(timerMode > 0);
+  // For host, timerMode is the constructor param; for guest, guestTimerMode is set via timer-config message
+  const timerActive = $derived(role === 'host' ? timerMode > 0 : guestTimerMode > 0);
 
   // Timer internals (not reactive)
   let timerStartedAt = 0;
@@ -112,23 +113,20 @@ export function createOnlineGameState(
     }, 1000);
   }
 
-  // Guest timer display functions
+  // Guest timer display: self-correcting wall-clock countdown
+  // guestTimerStartedAt + guestTimerDuration define the deadline; interval just derives remaining
+  let guestTimerDuration = 0; // seconds from last sync point
+
   function startGuestDisplayTimer(): void {
     stopGuestDisplayTimer();
     guestTimerStartedAt = Date.now();
+    guestTimerDuration = timerRemaining;
     timerRunning = true;
     timerExpired = false;
 
     guestTimerIntervalId = setInterval(() => {
-      const elapsed = (Date.now() - guestTimerStartedAt) / 1000;
-      const remaining = Math.max(0, Math.ceil(timerRemaining - elapsed));
-      // Only update display, don't overwrite timerRemaining (that comes from sync)
-      // Actually we need a display value; use timerRemaining directly as sync updates it
-      const displayRemaining = Math.max(0, timerRemaining - Math.floor(elapsed));
-      if (displayRemaining !== timerRemaining) {
-        // Smooth local countdown between syncs
-        timerRemaining = Math.max(0, Math.ceil((guestTimerStartedAt + timerRemaining * 1000 - Date.now()) / 1000));
-      }
+      const remaining = Math.max(0, Math.ceil((guestTimerStartedAt + guestTimerDuration * 1000 - Date.now()) / 1000));
+      timerRemaining = remaining;
     }, 200);
   }
 
@@ -142,8 +140,7 @@ export function createOnlineGameState(
   function resetGuestTimer(remainingSeconds: number): void {
     stopGuestDisplayTimer();
     timerRemaining = remainingSeconds;
-    guestTimerStartedAt = Date.now();
-    if (guestTimerMode > 0) {
+    if (guestTimerMode > 0 && remainingSeconds > 0) {
       startGuestDisplayTimer();
     }
   }
@@ -263,7 +260,9 @@ export function createOnlineGameState(
             startGuestDisplayTimer();
           }
         } else if (msg.type === 'timer-sync') {
+          // Reset wall-clock anchor on each sync from host
           timerRemaining = msg.remaining;
+          guestTimerDuration = msg.remaining;
           guestTimerStartedAt = Date.now();
         } else if (msg.type === 'timer-expired') {
           timerExpired = true;
