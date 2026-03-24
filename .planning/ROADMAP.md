@@ -80,11 +80,13 @@ Plans:
   3. The host validates all moves -- a tampered guest client cannot place illegal moves
   4. A connection status indicator shows whether the opponent is connected or disconnected
   5. A complete game (placement, win detection, game over, rematch) works identically to local play but across two browsers
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Message protocol types, snapshot serialization, PeerJS connection wrapper with tests
+- [ ] 04-02-PLAN.md — Landing page component, CSS custom properties, App.svelte view routing
+- [ ] 04-03-PLAN.md — Network state, online game state (GameStateAPI-conformant), ConnectionStatus component
+- [ ] 04-04-PLAN.md — WaitingOverlay, JoinOverlay, App.svelte full wiring, end-to-end verification checkpoint
 
 ### Phase 5: Turn Timer
 **Goal**: Host can configure a turn timer before the game starts, and both players see a synchronized countdown that enforces time limits
@@ -109,5 +111,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Hex Grid Engine | 3/3 | Complete | - |
 | 2. Game Rules and Local Play | 3/3 | Complete   | 2026-03-22 |
 | 3. Theme and Touch Polish | 3/3 | Complete   | 2026-03-23 |
-| 4. WebRTC Multiplayer | 0/0 | Not started | - |
+| 4. WebRTC Multiplayer | 0/4 | Planning complete | - |
 | 5. Turn Timer | 0/0 | Not started | - |
