@@ -1,70 +1,8 @@
 <script lang="ts">
-  import { getVisibleHexes } from '../lib/hex/viewport';
-  import { hexToPixel, hexCorners } from '../lib/hex/math';
-  import type { Camera } from '../lib/hex/types';
-
   let { onLocalGame, onOnlineGame }: { onLocalGame: () => void; onOnlineGame: () => void } = $props();
-
-  let bgCanvas: HTMLCanvasElement | undefined = $state(undefined);
-
-  const HEX_SIZE = 30;
-  const FIXED_CAMERA: Camera = { x: 0, y: 0, zoom: 1.0 };
-
-  function drawDecorativeGrid() {
-    if (!bgCanvas) return;
-    const ctx = bgCanvas.getContext('2d');
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = bgCanvas.clientWidth;
-    const height = bgCanvas.clientHeight;
-
-    bgCanvas.width = width * dpr;
-    bgCanvas.height = height * dpr;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-
-    // Apply camera transform
-    ctx.setTransform(
-      FIXED_CAMERA.zoom * dpr, 0,
-      0, FIXED_CAMERA.zoom * dpr,
-      FIXED_CAMERA.x * FIXED_CAMERA.zoom * dpr,
-      FIXED_CAMERA.y * FIXED_CAMERA.zoom * dpr,
-    );
-
-    const hexes = getVisibleHexes(FIXED_CAMERA, width, height, HEX_SIZE);
-
-    // Get grid color from CSS custom property
-    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--color-grid').trim() || 'rgba(255, 255, 255, 0.12)';
-
-    ctx.strokeStyle = gridColor;
-    ctx.lineWidth = 1;
-    for (let i = 0; i < hexes.length; i++) {
-      const center = hexToPixel(hexes[i], HEX_SIZE);
-      const corners = hexCorners(center, HEX_SIZE);
-      ctx.beginPath();
-      ctx.moveTo(corners[0].x, corners[0].y);
-      for (let j = 1; j < 6; j++) {
-        ctx.lineTo(corners[j].x, corners[j].y);
-      }
-      ctx.closePath();
-      ctx.stroke();
-    }
-  }
-
-  $effect(() => {
-    if (bgCanvas) {
-      drawDecorativeGrid();
-    }
-  });
 </script>
 
-<div class="landing-page">
-  <canvas
-    class="bg-canvas"
-    bind:this={bgCanvas}
-  ></canvas>
+<div class="landing-overlay">
   <div class="content">
     <h1 class="title">Hex Connect6</h1>
     <p class="tagline">Connect 6 on a hex grid</p>
@@ -77,27 +15,17 @@
 </div>
 
 <style>
-  .landing-page {
-    position: relative;
-    width: 100%;
-    min-height: 100%;
+  .landing-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: var(--color-gameover-bg);
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .bg-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    opacity: 0.5;
-  }
-
   .content {
-    position: relative;
-    z-index: 1;
     max-width: 400px;
     width: 100%;
     padding: 0 32px;

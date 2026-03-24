@@ -32,10 +32,10 @@ const MAX_ID_RETRIES = 3;
  * Create a host peer that listens for a guest connection.
  * Generates a unique game ID and registers with PeerJS signaling server.
  */
-export function createHost(callbacks: ConnectionCallbacks) {
+export function createHost(callbacks: ConnectionCallbacks, existingGameId?: string) {
   let conn: DataConnection | null = null;
   let retryCount = 0;
-  let gameId = generateGameId();
+  let gameId = existingGameId ?? generateGameId();
 
   function initPeer(id: string): Peer {
     const peer = new Peer(id, { debug: 0 });

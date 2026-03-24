@@ -25,29 +25,22 @@
   let joinStatus = $state<'ready' | 'connecting' | 'error'>('ready');
   let joinError = $state<string | null>(null);
 
-  // Theme persists across all views (D-02)
+  // Theme persists across all views
   const themeState = createThemeState();
   const themeColors = $derived(themeState.theme === 'dark' ? DARK_THEME : LIGHT_THEME);
 
-  // Background game state for guest join screen (renders empty board behind overlay)
-  let guestBackgroundState = $state<GameStateAPI | null>(null);
+  // Background game state — always exists so the board is always visible behind overlays
+  const backgroundState = createGameState();
 
-  // Active game state: selects between local and online, with background fallback for guest
-  const activeGameState = $derived<GameStateAPI | null>(
-    view === 'local-game' ? gameState :
-    (view === 'online-host' || view === 'online-guest') ? (onlineGameState ?? guestBackgroundState) :
-    null
-  );
-
-  // Detect guest link hash on mount (D-03) -- read ONCE, no hashchange listener
-  // Also check sessionStorage for host role to handle refresh correctly
+  // Detect initial view from URL hash + sessionStorage
   function detectInitialView(): AppView {
     const hash = window.location.hash.slice(1);
     if (hash.length >= 6) {
-      // Check if we're the host who refreshed (not a guest joining)
       const storedRole = sessionStorage.getItem('hex-role');
       if (storedRole === 'host') {
-        return 'landing'; // Host refreshed — go back to landing, clear hash
+        // Host refreshed — re-create as host with same game ID
+        gameId = hash;
+        return 'online-host';
       }
       gameId = hash;
       return 'online-guest';
@@ -57,10 +50,29 @@
 
   let view = $state<AppView>(detectInitialView());
 
-  // Create background board for guest join screen so overlay is semi-transparent over the grid
-  if (view === 'online-guest') {
-    guestBackgroundState = createGameState();
+  // If host refreshed, auto-restart the online game
+  if (view === 'online-host' && gameId) {
+    networkState = createNetworkState();
+    onlineGameState = createOnlineGameState('host', gameId, networkState);
   }
+
+  // Active game state for gameplay: local or online (when connected)
+  const activeGameState = $derived<GameStateAPI | null>(
+    view === 'local-game' ? gameState :
+    (view === 'online-host' || view === 'online-guest') ? onlineGameState :
+    null
+  );
+
+  // The game state to render on the canvas — active game if playing, background otherwise
+  const displayGameState = $derived<GameStateAPI>(activeGameState ?? backgroundState);
+
+  // Whether the game is actively playable (no overlay blocking it)
+  const isPlaying = $derived(
+    activeGameState != null &&
+    view !== 'landing' &&
+    !showWaitingOverlay &&
+    !showJoinOverlay
+  );
 
   function startLocalGame() {
     gameState = createGameState();
@@ -88,7 +100,7 @@
   $effect(() => {
     if (view === 'online-guest' && networkState) {
       if (networkState.status === 'connected') {
-        joinStatus = 'ready'; // Will hide JoinOverlay via condition below
+        joinStatus = 'ready';
       } else if (networkState.error) {
         joinStatus = 'error';
         joinError = networkState.error;
@@ -115,13 +127,6 @@
     view = 'landing';
   }
 
-  // Cleanup on navigation back to landing
-  function cleanupOnline() {
-    onlineGameState?.destroy();
-    onlineGameState = null;
-    networkState = null;
-  }
-
   // Whether the guest join overlay should be shown
   const showJoinOverlay = $derived(
     view === 'online-guest' && (
@@ -131,7 +136,7 @@
     ) && networkState?.status !== 'connected'
   );
 
-  // Whether the host waiting overlay should be shown (including loading state before PeerJS connects)
+  // Whether the host waiting overlay should be shown
   const showWaitingOverlay = $derived(
     view === 'online-host' && (
       onlineGameState?.waitingForGuest === true ||
@@ -140,7 +145,7 @@
     )
   );
 
-  // Whether the connection status should be shown (online game active, not in overlay)
+  // Whether the connection status should be shown
   const showConnectionStatus = $derived(
     (view === 'online-host' || view === 'online-guest') &&
     networkState != null &&
@@ -154,47 +159,42 @@
   );
 </script>
 
-{#if view === 'landing'}
-  <div class="landing-container">
-    <ThemeToggle theme={themeState.theme} onToggle={() => themeState.toggle()} />
+<div class="game-container">
+  <!-- Board always renders as background -->
+  <HexCanvas bind:debugActive gameState={displayGameState} {themeColors} />
+  <ThemeToggle theme={themeState.theme} onToggle={() => themeState.toggle()} />
+
+  <!-- Game UI overlays (only when actively playing) -->
+  {#if isPlaying && activeGameState}
+    <TurnIndicator
+      currentPlayer={activeGameState.currentPlayer}
+      placementsThisTurn={activeGameState.placementsThisTurn}
+      maxPlacements={activeGameState.maxPlacements}
+      visible={activeGameState.status === 'playing'}
+    />
+    <MoveCounter totalMoves={activeGameState.totalMoves} />
+    {#if activeGameState.status === 'won' && activeGameState.winner}
+      <GameOverlay winner={activeGameState.winner} onRematch={() => activeGameState!.rematch()} />
+    {/if}
+  {/if}
+
+  <!-- Menu/connection overlays (semi-transparent over the board) -->
+  {#if view === 'landing'}
     <LandingPage onLocalGame={startLocalGame} onOnlineGame={startOnlineGame} />
-  </div>
-{:else}
-  <div class="game-container">
-    <ThemeToggle theme={themeState.theme} onToggle={() => themeState.toggle()} />
-    {#if activeGameState}
-      <HexCanvas bind:debugActive gameState={activeGameState} {themeColors} />
-      <TurnIndicator
-        currentPlayer={activeGameState.currentPlayer}
-        placementsThisTurn={activeGameState.placementsThisTurn}
-        maxPlacements={activeGameState.maxPlacements}
-        visible={activeGameState.status === 'playing'}
-      />
-      <MoveCounter totalMoves={activeGameState.totalMoves} />
-      {#if activeGameState.status === 'won' && activeGameState.winner}
-        <GameOverlay winner={activeGameState.winner} onRematch={() => activeGameState!.rematch()} />
-      {/if}
-    {/if}
-    {#if showWaitingOverlay}
-      <WaitingOverlay link={onlineGameState?.shareLink ?? ''} status={waitingStatus} />
-    {/if}
-    {#if showJoinOverlay}
-      <JoinOverlay onJoin={handleJoin} status={joinStatus} error={joinError ?? undefined} onBack={handleBack} />
-    {/if}
-    {#if showConnectionStatus && networkState}
-      <ConnectionStatus status={networkState.status} />
-    {/if}
-    <DebugOverlay active={debugActive} />
-  </div>
-{/if}
+  {/if}
+  {#if showWaitingOverlay}
+    <WaitingOverlay link={onlineGameState?.shareLink ?? ''} status={waitingStatus} />
+  {/if}
+  {#if showJoinOverlay}
+    <JoinOverlay onJoin={handleJoin} status={joinStatus} error={joinError ?? undefined} onBack={handleBack} />
+  {/if}
+  {#if showConnectionStatus && networkState}
+    <ConnectionStatus status={networkState.status} />
+  {/if}
+  <DebugOverlay active={debugActive} />
+</div>
 
 <style>
-  .landing-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
   .game-container {
     position: relative;
     width: 100%;

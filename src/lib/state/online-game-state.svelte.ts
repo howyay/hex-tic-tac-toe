@@ -80,7 +80,7 @@ export function createOnlineGameState(
         networkState.error = err.message;
         networkState.status = 'disconnected';
       },
-    });
+    }, gameId ?? undefined);
     conn = hostConn;
   } else {
     // Guest role
