@@ -28,8 +28,8 @@
 
 ### Multiplayer
 
-- [ ] **NET-01**: Host creates a game and receives a shareable link
-- [ ] **NET-02**: Guest joins by opening the shared link in their browser
+- [x] **NET-01**: Host creates a game and receives a shareable link
+- [x] **NET-02**: Guest joins by opening the shared link in their browser
 - [x] **NET-03**: Connection established via WebRTC data channel using PeerJS
 - [x] **NET-04**: Game state is synchronized directly between peers (no game server)
 - [x] **NET-05**: Host validates all moves (host-authoritative model)
@@ -110,8 +110,8 @@
 | UI-06 | Phase 3 | Complete |
 | UI-07 | Phase 3 | Complete |
 | UI-08 | Phase 3 | Complete |
-| NET-01 | Phase 4 | Pending |
-| NET-02 | Phase 4 | Pending |
+| NET-01 | Phase 4 | Complete |
+| NET-02 | Phase 4 | Complete |
 | NET-03 | Phase 4 | Complete |
 | NET-04 | Phase 4 | Complete |
 | NET-05 | Phase 4 | Complete |
