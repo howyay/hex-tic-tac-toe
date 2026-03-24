@@ -34,9 +34,9 @@
 - [x] **NET-04**: Game state is synchronized directly between peers (no game server)
 - [x] **NET-05**: Host validates all moves (host-authoritative model)
 - [x] **NET-06**: Connection status indicator shows connected/disconnected state
-- [ ] **NET-07**: Host can set turn timer before game starts (30s, 60s, or unlimited)
+- [x] **NET-07**: Host can set turn timer before game starts (30s, 60s, or unlimited)
 - [ ] **NET-08**: Timer countdown visible to both players during timed games
-- [ ] **NET-09**: Turn automatically forfeits remaining placements when timer expires
+- [x] **NET-09**: Turn automatically forfeits remaining placements when timer expires
 
 ### UI/UX
 
@@ -116,9 +116,9 @@
 | NET-04 | Phase 4 | Complete |
 | NET-05 | Phase 4 | Complete |
 | NET-06 | Phase 4 | Complete |
-| NET-07 | Phase 5 | Pending |
+| NET-07 | Phase 5 | Complete |
 | NET-08 | Phase 5 | Pending |
-| NET-09 | Phase 5 | Pending |
+| NET-09 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 32 total
