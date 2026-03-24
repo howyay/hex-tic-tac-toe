@@ -9,13 +9,16 @@
   import WaitingOverlay from './components/WaitingOverlay.svelte';
   import JoinOverlay from './components/JoinOverlay.svelte';
   import ConnectionStatus from './components/ConnectionStatus.svelte';
+  import TimerSelector from './components/TimerSelector.svelte';
   import { createGameState, type GameStateAPI } from './lib/state/game-state.svelte';
   import { createOnlineGameState, type OnlineGameStateAPI } from './lib/state/online-game-state.svelte';
   import { createNetworkState, type NetworkStateAPI } from './lib/network/network-state.svelte';
   import { createThemeState } from './lib/theme/theme-state.svelte';
   import { DARK_THEME, LIGHT_THEME } from './lib/theme/colors';
+  import type { TimerMode } from './lib/game/timer';
+  import { DEFAULT_TIMER_MODE } from './lib/game/timer';
 
-  type AppView = 'landing' | 'local-game' | 'online-host' | 'online-guest';
+  type AppView = 'landing' | 'local-game' | 'online-setup' | 'online-host' | 'online-guest';
 
   let debugActive = $state(false);
   let gameId = $state<string | null>(null);
@@ -24,6 +27,7 @@
   let onlineGameState = $state<OnlineGameStateAPI | null>(null);
   let joinStatus = $state<'ready' | 'connecting' | 'error'>('ready');
   let joinError = $state<string | null>(null);
+  let timerMode = $state<TimerMode>(DEFAULT_TIMER_MODE);
 
   // Theme persists across all views
   const themeState = createThemeState();
@@ -50,10 +54,10 @@
 
   let view = $state<AppView>(detectInitialView());
 
-  // If host refreshed, auto-restart the online game
+  // If host refreshed, auto-restart the online game (timer lost on refresh -- unlimited)
   if (view === 'online-host' && gameId) {
     networkState = createNetworkState();
-    onlineGameState = createOnlineGameState('host', gameId, networkState);
+    onlineGameState = createOnlineGameState('host', gameId, networkState, 0);
   }
 
   // Active game state for gameplay: local or online (when connected)
@@ -70,9 +74,13 @@
   const isPlaying = $derived(
     activeGameState != null &&
     view !== 'landing' &&
+    view !== 'online-setup' &&
     !showWaitingOverlay &&
     !showJoinOverlay
   );
+
+  // Shake animation derived from online game state
+  const isShaking = $derived(onlineGameState?.shaking ?? false);
 
   function startLocalGame() {
     gameState = createGameState();
@@ -80,9 +88,14 @@
   }
 
   function startOnlineGame() {
+    view = 'online-setup';
+  }
+
+  function handleTimerSelect(mode: TimerMode) {
+    timerMode = mode;
     sessionStorage.setItem('hex-role', 'host');
     networkState = createNetworkState();
-    onlineGameState = createOnlineGameState('host', null, networkState);
+    onlineGameState = createOnlineGameState('host', null, networkState, timerMode);
     view = 'online-host';
   }
 
@@ -159,7 +172,7 @@
   );
 </script>
 
-<div class="game-container">
+<div class="game-container" class:shake={isShaking}>
   <!-- Board always renders as background -->
   <HexCanvas bind:debugActive gameState={displayGameState} {themeColors} />
   <ThemeToggle theme={themeState.theme} onToggle={() => themeState.toggle()} />
@@ -171,6 +184,8 @@
       placementsThisTurn={activeGameState.placementsThisTurn}
       maxPlacements={activeGameState.maxPlacements}
       visible={activeGameState.status === 'playing'}
+      timerSeconds={onlineGameState?.timerSeconds}
+      timerWarning={onlineGameState?.timerWarning ?? false}
     />
     <MoveCounter totalMoves={activeGameState.totalMoves} />
     {#if activeGameState.status === 'won' && activeGameState.winner}
@@ -181,6 +196,9 @@
   <!-- Menu/connection overlays (semi-transparent over the board) -->
   {#if view === 'landing'}
     <LandingPage onLocalGame={startLocalGame} onOnlineGame={startOnlineGame} />
+  {/if}
+  {#if view === 'online-setup'}
+    <TimerSelector onSelect={handleTimerSelect} />
   {/if}
   {#if showWaitingOverlay}
     <WaitingOverlay link={onlineGameState?.shareLink ?? ''} status={waitingStatus} />
@@ -199,6 +217,16 @@
     position: relative;
     width: 100%;
     height: 100%;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 50%, 90% { transform: translateX(-3px); }
+    30%, 70% { transform: translateX(3px); }
+  }
+
+  .game-container.shake {
+    animation: shake 0.4s ease-in-out;
   }
 
   :global(html, body, #app) {
