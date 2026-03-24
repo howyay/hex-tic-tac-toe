@@ -86,7 +86,7 @@ Plans:
 - [x] 04-01-PLAN.md — Message protocol types, snapshot serialization, PeerJS connection wrapper with tests
 - [x] 04-02-PLAN.md — Landing page component, CSS custom properties, App.svelte view routing
 - [x] 04-03-PLAN.md — Network state, online game state (GameStateAPI-conformant), ConnectionStatus component
-- [ ] 04-04-PLAN.md — WaitingOverlay, JoinOverlay, App.svelte full wiring, end-to-end verification checkpoint
+- [x] 04-04-PLAN.md — WaitingOverlay, JoinOverlay, App.svelte full wiring, end-to-end verification checkpoint
 
 ### Phase 5: Turn Timer
 **Goal**: Host can configure a turn timer before the game starts, and both players see a synchronized countdown that enforces time limits
