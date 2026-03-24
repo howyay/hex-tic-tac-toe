@@ -1,4 +1,5 @@
 import type { HexCoord, Player, GameSnapshot, GameStatus } from '../hex/types';
+import type { TimerMode } from '../game/timer';
 
 /** Serializable version of GameSnapshot with board as plain object instead of Map */
 export interface SerializedSnapshot {
@@ -21,7 +22,10 @@ export type GameMessage =
   | { type: 'rematch-request' }
   | { type: 'rematch-accept'; snapshot: SerializedSnapshot }
   | { type: 'ping' }
-  | { type: 'pong' };
+  | { type: 'pong' }
+  | { type: 'timer-config'; mode: TimerMode }
+  | { type: 'timer-sync'; remaining: number }
+  | { type: 'timer-expired' };
 
 /** Convert a GameSnapshot to a JSON-serializable form (Map -> Record) */
 export function serializeSnapshot(s: GameSnapshot): SerializedSnapshot {
