@@ -1,10 +1,25 @@
 import Peer from 'peerjs';
-import type { DataConnection } from 'peerjs';
+import type { DataConnection, PeerJSOption } from 'peerjs';
 import { customAlphabet } from 'nanoid';
 import type { GameMessage } from './protocol';
 
 /** Generate PeerJS-safe game IDs: 8 chars, alphanumeric only (per D-05, Pitfall 1) */
 export const generateGameId = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 8);
+
+const TURN_CREDENTIAL_URL = import.meta.env.VITE_TURN_CREDENTIAL_URL as string | undefined;
+
+/** Fetch ICE servers (STUN + TURN) from the credential worker. Falls back to STUN-only. */
+async function getIceConfig(): Promise<PeerJSOption['config']> {
+  if (!TURN_CREDENTIAL_URL) return undefined;
+  try {
+    const resp = await fetch(TURN_CREDENTIAL_URL);
+    if (!resp.ok) return undefined;
+    const data = await resp.json() as { iceServers: RTCIceServer[] };
+    return { iceServers: data.iceServers };
+  } catch {
+    return undefined;
+  }
+}
 
 /** Build a shareable link for a game */
 export function buildShareLink(gameId: string): string {
@@ -36,9 +51,13 @@ export function createHost(callbacks: ConnectionCallbacks, existingGameId?: stri
   let conn: DataConnection | null = null;
   let retryCount = 0;
   let gameId = existingGameId ?? generateGameId();
+  let currentPeer: Peer;
 
-  function initPeer(id: string): Peer {
-    const peer = new Peer(id, { debug: 0 });
+  // Fetch ICE config then init — peer creation is async now
+  getIceConfig().then((config) => { currentPeer = initPeer(gameId, config); });
+
+  function initPeer(id: string, config?: PeerJSOption['config']): Peer {
+    const peer = new Peer(id, { debug: 0, config });
 
     peer.on('open', (openedId: string) => {
       gameId = openedId;
@@ -68,7 +87,7 @@ export function createHost(callbacks: ConnectionCallbacks, existingGameId?: stri
         peer.destroy();
         const newId = generateGameId();
         gameId = newId;
-        currentPeer = initPeer(newId);
+        currentPeer = initPeer(newId, config);
         return;
       }
       callbacks.onError(err);
@@ -76,8 +95,6 @@ export function createHost(callbacks: ConnectionCallbacks, existingGameId?: stri
 
     return peer;
   }
-
-  let currentPeer = initPeer(gameId);
 
   return {
     get peer() { return currentPeer; },
@@ -90,9 +107,10 @@ export function createHost(callbacks: ConnectionCallbacks, existingGameId?: stri
 /**
  * Join an existing game as a guest by connecting to the host's peer ID.
  */
-export function joinGame(gameId: string, callbacks: ConnectionCallbacks) {
+export async function joinGame(gameId: string, callbacks: ConnectionCallbacks) {
   let conn: DataConnection | null = null;
-  const peer = new Peer(undefined as unknown as string, { debug: 0 });
+  const config = await getIceConfig();
+  const peer = new Peer(undefined as unknown as string, { debug: 0, config });
 
   peer.on('open', () => {
     const dataConn = peer.connect(gameId, { reliable: true });

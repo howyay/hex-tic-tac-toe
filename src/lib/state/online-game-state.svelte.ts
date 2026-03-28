@@ -26,6 +26,7 @@ export function createOnlineGameState(
   let conn: { send: (msg: GameMessage) => void; destroy: () => void } | null = null;
 
   // Timer state (transient, not in snapshot)
+  let guestTimerMode: TimerMode = 0;
   let timerRemaining = $state(0);
   let timerRunning = $state(false);
   let timerExpired = $state(false);
@@ -43,7 +44,6 @@ export function createOnlineGameState(
   let forfeitTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   // Guest-side timer internals
-  let guestTimerMode: TimerMode = 0;
   let guestTimerStartedAt = 0;
   let guestTimerIntervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -229,7 +229,7 @@ export function createOnlineGameState(
   } else {
     // Guest role
     networkState.status = 'connecting';
-    const guestConn = joinGame(gameId!, {
+    const guestConnPromise = joinGame(gameId!, {
       onOpen() {
         // Guest peer opened, connection in progress
       },
@@ -286,7 +286,7 @@ export function createOnlineGameState(
         stopGuestDisplayTimer();
       },
     });
-    conn = guestConn;
+    guestConnPromise.then((guestConn) => { conn = guestConn; });
   }
 
   function placeStone(hex: HexCoord): void {
