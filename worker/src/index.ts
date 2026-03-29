@@ -8,7 +8,8 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get('Origin') ?? '';
     const allowed = env.ALLOWED_ORIGINS.split(',').map((s) => s.trim());
-    const corsOrigin = allowed.includes(origin) ? origin : allowed[0];
+    const isLocalhost = /^https?:\/\/localhost(:\d+)?$/.test(origin);
+    const corsOrigin = allowed.includes(origin) || isLocalhost ? origin : allowed[0];
 
     const corsHeaders = {
       'Access-Control-Allow-Origin': corsOrigin,
