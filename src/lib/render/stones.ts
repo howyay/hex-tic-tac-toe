@@ -64,6 +64,22 @@ export function drawWinHighlight(
   ctx.restore();
 }
 
+/** Draw a subtle dot indicator for last-placed stone */
+export function drawLastMoveIndicator(
+  ctx: CanvasRenderingContext2D,
+  center: Point,
+  size: number,
+  color: string,
+): void {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.6;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y + size * 0.75, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 /** Draw a red flash fill on a rejected (occupied) hex */
 export function drawRejectionFlash(
   ctx: CanvasRenderingContext2D,

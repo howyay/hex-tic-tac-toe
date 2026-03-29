@@ -72,6 +72,8 @@ export function createOnlineGameState(
   let rejectedHex = $state<HexCoord | null>(null);
   let rejectedTimeout: ReturnType<typeof setTimeout> | null = null;
   let waitingForConfirmation = $state(false);
+  let lastPlacedHexes = $state<HexCoord[]>([]);
+  let moveHistory = $state<{ player: 'X' | 'O'; hex: HexCoord }[]>([]);
 
   // Reconnection state
   let reconnectAttempt = $state(0);
@@ -297,7 +299,13 @@ export function createOnlineGameState(
           const hex: HexCoord = { q: msg.q, r: msg.r };
           const previousPlayer = snapshot.currentPlayer;
           if (isValidMove(snapshot, hex)) {
+            moveHistory = [...moveHistory, { player: previousPlayer, hex }];
             snapshot = applyMove(snapshot, hex);
+            if (snapshot.currentPlayer !== previousPlayer) {
+              lastPlacedHexes = [hex];
+            } else {
+              lastPlacedHexes = [...lastPlacedHexes, hex];
+            }
             hostConn.send({ type: 'state-update', snapshot: serializeSnapshot(snapshot) });
             if (snapshot.currentPlayer !== previousPlayer) {
               resetTimer();
@@ -493,7 +501,13 @@ export function createOnlineGameState(
         return;
       }
       const previousPlayer = snapshot.currentPlayer;
+      moveHistory = [...moveHistory, { player: previousPlayer, hex }];
       snapshot = applyMove(snapshot, hex);
+      if (snapshot.currentPlayer !== previousPlayer) {
+        lastPlacedHexes = [hex];
+      } else {
+        lastPlacedHexes = [...lastPlacedHexes, hex];
+      }
       conn?.send({ type: 'state-update', snapshot: serializeSnapshot(snapshot) });
       grid.needsRedraw = true;
       persist();
@@ -578,6 +592,8 @@ export function createOnlineGameState(
     get winningLine() { return winningLine; },
     get rejectedHex() { return rejectedHex; },
     get gridState() { return grid; },
+    get lastPlacedHexes() { return lastPlacedHexes; },
+    get moveHistory() { return moveHistory; },
     placeStone,
     rematch,
     get networkStatus() { return networkState.status; },

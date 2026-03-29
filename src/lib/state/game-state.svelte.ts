@@ -7,6 +7,8 @@ export function createGameState() {
   let snapshot = $state(createInitialSnapshot('X'));
   let rejectedHex = $state<HexCoord | null>(null);
   let rejectedTimeout: ReturnType<typeof setTimeout> | null = null;
+  let lastPlacedHexes = $state<HexCoord[]>([]);
+  let moveHistory = $state<{ player: Player; hex: HexCoord }[]>([]);
 
   const grid = createGridState();
 
@@ -34,12 +36,22 @@ export function createGameState() {
       }
       return;
     }
+    const prevPlayer = snapshot.currentPlayer;
+    moveHistory = [...moveHistory, { player: prevPlayer, hex }];
     snapshot = applyMove(snapshot, hex);
+    // Track last placed hexes — reset on turn change
+    if (snapshot.currentPlayer !== prevPlayer) {
+      lastPlacedHexes = [hex];
+    } else {
+      lastPlacedHexes = [...lastPlacedHexes, hex];
+    }
     grid.needsRedraw = true;
   }
 
   function rematch(): void {
     snapshot = applyRematch(snapshot);
+    lastPlacedHexes = [];
+    moveHistory = [];
     rejectedHex = null;
     if (rejectedTimeout) {
       clearTimeout(rejectedTimeout);
@@ -60,6 +72,8 @@ export function createGameState() {
     get winningLine() { return winningLine; },
     get rejectedHex() { return rejectedHex; },
     get gridState() { return grid; },
+    get lastPlacedHexes() { return lastPlacedHexes; },
+    get moveHistory() { return moveHistory; },
     placeStone,
     rematch,
   };

@@ -39,6 +39,7 @@
     gameState.status;
     gameState.rejectedHex;
     gameState.currentPlayer;
+    gameState.lastPlacedHexes;
     themeColors;
     state.needsRedraw = true;
   });
@@ -80,6 +81,7 @@
           gameState.winner,
           gameState.rejectedHex,
           themeColors,
+          gameState.lastPlacedHexes,
         );
         state.needsRedraw = false;
       }

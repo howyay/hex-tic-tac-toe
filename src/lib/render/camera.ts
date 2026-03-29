@@ -44,3 +44,36 @@ export function panCamera(camera: Camera, deltaX: number, deltaY: number): Camer
     zoom: camera.zoom,
   };
 }
+
+/** Compute camera that centers a bounding box (world-space min/max) within the viewport */
+export function cameraForBounds(
+  minX: number, minY: number, maxX: number, maxY: number,
+  viewportWidth: number, viewportHeight: number,
+  padding: number = 60,
+): Camera {
+  const bboxW = maxX - minX + padding * 2;
+  const bboxH = maxY - minY + padding * 2;
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  const zoom = clamp(
+    Math.min(viewportWidth / bboxW, viewportHeight / bboxH),
+    ZOOM_MIN,
+    ZOOM_MAX,
+  );
+
+  return {
+    x: viewportWidth / (2 * zoom) - centerX,
+    y: viewportHeight / (2 * zoom) - centerY,
+    zoom,
+  };
+}
+
+/** Linearly interpolate between two cameras */
+export function lerpCamera(a: Camera, b: Camera, t: number): Camera {
+  return {
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t,
+    zoom: a.zoom + (b.zoom - a.zoom) * t,
+  };
+}

@@ -19,8 +19,14 @@
   import type { TimerMode } from './lib/game/timer';
   import { DEFAULT_TIMER_MODE } from './lib/game/timer';
   import { generateGameId } from './lib/network/connection';
+  import CenterButton from './components/CenterButton.svelte';
+  import { hexToPixel } from './lib/hex/math';
+  import { cameraForBounds } from './lib/render/camera';
 
   type AppView = 'landing' | 'local-game' | 'online-setup' | 'online-host' | 'online-guest';
+
+  let canvasWidth = $state(window.innerWidth);
+  let canvasHeight = $state(window.innerHeight);
 
   let debugActive = $state(false);
   let gameId = $state<string | null>(null);
@@ -180,6 +186,36 @@
   const waitingStatus = $derived<'registering' | 'waiting'>(
     networkState?.status === 'disconnected' ? 'registering' : 'waiting'
   );
+
+  // Track viewport size for center-on-action
+  $effect(() => {
+    const onResize = () => { canvasWidth = window.innerWidth; canvasHeight = window.innerHeight; };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  });
+
+  const HEX_SIZE = 30; // must match HexCanvas
+
+  // Show center button when there are stones on the board
+  const showCenterButton = $derived(isPlaying && activeGameState && activeGameState.board.size > 0);
+
+  function centerOnAction() {
+    if (!activeGameState || activeGameState.board.size === 0) return;
+    const board = activeGameState.board;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const key of board.keys()) {
+      const [q, r] = key.split(',').map(Number);
+      const px = hexToPixel({ q, r }, HEX_SIZE);
+      if (px.x < minX) minX = px.x;
+      if (px.y < minY) minY = px.y;
+      if (px.x > maxX) maxX = px.x;
+      if (px.y > maxY) maxY = px.y;
+    }
+
+    const target = cameraForBounds(minX, minY, maxX, maxY, canvasWidth, canvasHeight);
+    activeGameState.gridState.animateTo(target);
+  }
 </script>
 
 <div class="game-container" class:shake={isShaking}>
@@ -197,7 +233,7 @@
     />
     <MoveCounter totalMoves={activeGameState.totalMoves} />
     {#if activeGameState.status === 'won' && activeGameState.winner}
-      <GameOverlay winner={activeGameState.winner} onRematch={() => activeGameState!.rematch()} />
+      <GameOverlay winner={activeGameState.winner} onRematch={() => activeGameState!.rematch()} moveHistory={activeGameState.moveHistory} />
     {/if}
   {/if}
 
@@ -221,6 +257,9 @@
       onCancel={() => onlineGameState?.cancelReconnect()}
       onBack={handleBack}
     />
+  {/if}
+  {#if showCenterButton}
+    <CenterButton onclick={centerOnAction} />
   {/if}
   {#if showConnectionStatus && networkState}
     <ConnectionStatus status={networkState.status} />

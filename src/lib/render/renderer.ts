@@ -3,7 +3,7 @@ import { DARK_THEME, type ThemeColors } from '../theme/colors';
 import { hexToPixel, hexCorners } from '../hex/math';
 import { getVisibleHexes } from '../hex/viewport';
 import { drawEdgeFade, drawLODDot } from './effects';
-import { drawX, drawO, drawWinHighlight, drawRejectionFlash, getPlayerColor } from './stones';
+import { drawX, drawO, drawWinHighlight, drawRejectionFlash, drawLastMoveIndicator, getPlayerColor } from './stones';
 
 const LOD_DOT_RADIUS = 3;
 const LOD_THRESHOLD = 0.4;
@@ -92,6 +92,7 @@ export function render(
   winner?: Player | null,
   rejectedHex?: HexCoord | null,
   colors: ThemeColors = DARK_THEME,
+  lastPlacedHexes?: HexCoord[],
 ): void {
   const dpr = window.devicePixelRatio || 1;
 
@@ -128,7 +129,19 @@ export function render(
     }
   }
 
-  // 4c. Draw win highlight
+  // 4c. Draw last-move indicators
+  if (lastPlacedHexes && lastPlacedHexes.length > 0 && board) {
+    for (const coord of lastPlacedHexes) {
+      const key = `${coord.q},${coord.r}`;
+      const player = board.get(key);
+      if (player) {
+        const center = hexToPixel(coord, hexSize);
+        drawLastMoveIndicator(ctx, center, hexSize, getPlayerColor(player, colors));
+      }
+    }
+  }
+
+  // 4d. Draw win highlight
   if (status === 'won' && winningLine && winner) {
     const playerColor = getPlayerColor(winner, colors);
     for (const coord of winningLine) {
