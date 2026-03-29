@@ -8,6 +8,11 @@ import { drawX, drawO, drawWinHighlight, drawRejectionFlash, drawLastMoveIndicat
 const LOD_DOT_RADIUS = 3;
 const LOD_THRESHOLD = 0.4;
 const EDGE_FADE_SIZE = 64;
+const PLACEMENT_ANIM_DURATION = 200; // ms
+
+// Animation state: tracks when stones were placed for scale-in animation
+const placementTimestamps = new Map<string, number>();
+let previousBoardSize = 0;
 
 /** Apply camera transform to the canvas context */
 export function applyCamera(ctx: CanvasRenderingContext2D, camera: Camera): void {
@@ -93,7 +98,7 @@ export function render(
   rejectedHex?: HexCoord | null,
   colors: ThemeColors = DARK_THEME,
   lastPlacedHexes?: HexCoord[],
-): void {
+): boolean {
   const dpr = window.devicePixelRatio || 1;
 
   // 1. Clear canvas with background color (reset to DPR-scaled identity)
@@ -116,15 +121,58 @@ export function render(
   // 4. Draw hex grid
   drawGrid(ctx, hexes, hexSize, camera, camera.zoom, colors);
 
-  // 4b. Draw placed stones
+  // 4b. Draw placed stones (with placement animation)
+  let hasActiveAnimations = false;
   if (board) {
+    const now = performance.now();
+
+    // Detect newly added stones
+    if (board.size > previousBoardSize) {
+      for (const key of board.keys()) {
+        if (!placementTimestamps.has(key)) {
+          placementTimestamps.set(key, now);
+        }
+      }
+    }
+    previousBoardSize = board.size;
+
+    // Clean up old timestamps (keep map from growing)
+    if (board.size === 0) {
+      placementTimestamps.clear();
+    }
+
     for (const [key, player] of board) {
       const parts = key.split(',').map(Number);
       const center = hexToPixel({ q: parts[0], r: parts[1] }, hexSize);
+
+      // Check if this stone is animating
+      const placedAt = placementTimestamps.get(key);
+      let scale = 1;
+      if (placedAt !== undefined) {
+        const elapsed = now - placedAt;
+        if (elapsed < PLACEMENT_ANIM_DURATION) {
+          // Ease-out cubic: 1 - (1 - t)^3
+          const t = elapsed / PLACEMENT_ANIM_DURATION;
+          scale = 1 - Math.pow(1 - t, 3);
+          hasActiveAnimations = true;
+        }
+      }
+
+      if (scale < 1) {
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.scale(scale, scale);
+        ctx.translate(-center.x, -center.y);
+      }
+
       if (player === 'X') {
         drawX(ctx, center, hexSize, colors.playerX);
       } else {
         drawO(ctx, center, hexSize, colors.playerO);
+      }
+
+      if (scale < 1) {
+        ctx.restore();
       }
     }
   }
@@ -193,4 +241,6 @@ export function render(
       ctx.fillText(`(${hexes[i].q},${hexes[i].r})`, sx, sy);
     }
   }
+
+  return hasActiveAnimations;
 }

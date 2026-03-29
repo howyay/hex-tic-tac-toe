@@ -66,7 +66,7 @@
     const loop = () => {
       if (state.needsRedraw) {
         const ctx = canvas.getContext('2d')!;
-        render(
+        const animating = render(
           ctx,
           state.camera,
           canvas.clientWidth,
@@ -83,7 +83,7 @@
           themeColors,
           gameState.lastPlacedHexes,
         );
-        state.needsRedraw = false;
+        if (!animating) state.needsRedraw = false;
       }
       animationId = requestAnimationFrame(loop);
     };
