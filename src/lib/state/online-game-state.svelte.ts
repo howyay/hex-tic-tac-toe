@@ -3,39 +3,96 @@ import type { PlayerRole, NetworkStateAPI } from '../network/network-state.svelt
 import type { GameMessage } from '../network/protocol';
 import type { TimerMode } from '../game/timer';
 import { serializeSnapshot, deserializeSnapshot } from '../network/protocol';
-import { createHost, joinGame, buildShareLink } from '../network/connection';
+import type { SerializedSnapshot } from '../network/protocol';
+import { createHost, joinGame, buildShareLink, startReconnectLoop, registerRoom } from '../network/connection';
+import type { ReconnectHandle } from '../network/connection';
 import { applyMove, applyRematch, createInitialSnapshot, isValidMove, coordKey, forfeitTurn } from '../game/rules';
 import { createGridState } from './grid-state.svelte';
 import { DEFAULT_CAMERA } from '../render/camera';
 import { TIMER_WARNING_THRESHOLD } from '../game/timer';
 
+// sessionStorage keys
+const SS_SNAPSHOT = 'hex-game-snapshot';
+const SS_ROLE = 'hex-role';
+const SS_GAME_ID = 'hex-game-id';
+const SS_TIMER_MODE = 'hex-timer-mode';
+
+/** Persist game state to sessionStorage */
+function persistState(snapshot: SerializedSnapshot, role: PlayerRole, gameId: string, timerMode: TimerMode): void {
+  try {
+    sessionStorage.setItem(SS_SNAPSHOT, JSON.stringify(snapshot));
+    sessionStorage.setItem(SS_ROLE, role);
+    sessionStorage.setItem(SS_GAME_ID, gameId);
+    sessionStorage.setItem(SS_TIMER_MODE, String(timerMode));
+  } catch {
+    // sessionStorage may be unavailable
+  }
+}
+
+/** Restore game state from sessionStorage */
+export function restorePersistedState(): {
+  snapshot: SerializedSnapshot;
+  role: PlayerRole;
+  gameId: string;
+  timerMode: TimerMode;
+} | null {
+  try {
+    const snapshotStr = sessionStorage.getItem(SS_SNAPSHOT);
+    const role = sessionStorage.getItem(SS_ROLE) as PlayerRole | null;
+    const gameId = sessionStorage.getItem(SS_GAME_ID);
+    const timerModeStr = sessionStorage.getItem(SS_TIMER_MODE);
+    if (!snapshotStr || !role || !gameId) return null;
+    return {
+      snapshot: JSON.parse(snapshotStr) as SerializedSnapshot,
+      role,
+      gameId,
+      timerMode: (Number(timerModeStr) || 0) as TimerMode,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Clear persisted game state */
+export function clearPersistedState(): void {
+  sessionStorage.removeItem(SS_SNAPSHOT);
+  sessionStorage.removeItem(SS_ROLE);
+  sessionStorage.removeItem(SS_GAME_ID);
+  sessionStorage.removeItem(SS_TIMER_MODE);
+}
+
 export function createOnlineGameState(
   role: PlayerRole,
-  gameId: string | null,
+  gameId: string,
   networkState: NetworkStateAPI,
   timerMode: TimerMode = 0,
+  restoredSnapshot?: SerializedSnapshot,
 ) {
-  let snapshot = $state(createInitialSnapshot('X'));
+  let snapshot = $state(restoredSnapshot ? deserializeSnapshot(restoredSnapshot) : createInitialSnapshot('X'));
   let rejectedHex = $state<HexCoord | null>(null);
   let rejectedTimeout: ReturnType<typeof setTimeout> | null = null;
   let waitingForConfirmation = $state(false);
 
+  // Reconnection state
+  let reconnectAttempt = $state(0);
+  let reconnectFailed = $state(false);
+  let reconnectHandle: ReconnectHandle | null = null;
+  const maxReconnectAttempts = 20;
+
   const grid = createGridState();
 
-  // Connection handle -- NOT stored in $state (per research anti-pattern)
   let conn: { send: (msg: GameMessage) => void; destroy: () => void } | null = null;
 
-  // Timer state (transient, not in snapshot)
+  // Timer state
   let guestTimerMode = $state<TimerMode>(0);
   let timerRemaining = $state(0);
   let timerRunning = $state(false);
   let timerExpired = $state(false);
   let shaking = $state(false);
   const timerWarning = $derived(timerRunning && timerRemaining <= TIMER_WARNING_THRESHOLD && timerRemaining > 0);
-  // For host, timerMode is the constructor param; for guest, guestTimerMode is set via timer-config message
   const timerActive = $derived(role === 'host' ? timerMode > 0 : guestTimerMode > 0);
 
-  // Timer internals (not reactive)
+  // Timer internals
   let timerStartedAt = 0;
   let timerDuration = 0;
   let timerIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -43,9 +100,18 @@ export function createOnlineGameState(
   let shakeTimeoutId: ReturnType<typeof setTimeout> | null = null;
   let forfeitTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  // Guest-side timer internals
+  // Guest timer internals
   let guestTimerStartedAt = 0;
   let guestTimerIntervalId: ReturnType<typeof setInterval> | null = null;
+  let guestTimerDuration = 0;
+
+  // Timer pause state for disconnect recovery
+  let pausedTimerRemaining = 0;
+
+  /** Persist current state to sessionStorage */
+  function persist(): void {
+    persistState(serializeSnapshot(snapshot), role, gameId, role === 'host' ? timerMode : guestTimerMode);
+  }
 
   function startTimer(): void {
     if (!timerActive) return;
@@ -62,7 +128,6 @@ export function createOnlineGameState(
       timerRemaining = remaining;
       syncTickCount++;
 
-      // Sync every 25 ticks (~5 seconds)
       if (syncTickCount % 25 === 0) {
         conn?.send({ type: 'timer-sync', remaining: timerRemaining });
       }
@@ -79,6 +144,38 @@ export function createOnlineGameState(
       timerIntervalId = null;
     }
     timerRunning = false;
+  }
+
+  function pauseTimer(): void {
+    pausedTimerRemaining = timerRemaining;
+    stopTimer();
+  }
+
+  function resumeTimer(): void {
+    if (!timerActive || pausedTimerRemaining <= 0) return;
+    stopTimer();
+    timerStartedAt = Date.now();
+    timerDuration = pausedTimerRemaining;
+    timerRemaining = pausedTimerRemaining;
+    timerRunning = true;
+    timerExpired = false;
+    syncTickCount = 0;
+
+    timerIntervalId = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((timerStartedAt + timerDuration * 1000 - Date.now()) / 1000));
+      timerRemaining = remaining;
+      syncTickCount++;
+
+      if (syncTickCount % 25 === 0) {
+        conn?.send({ type: 'timer-sync', remaining: timerRemaining });
+      }
+
+      if (remaining <= 0) {
+        handleTimerExpiry();
+      }
+    }, 200);
+
+    pausedTimerRemaining = 0;
   }
 
   function resetTimer(): void {
@@ -107,15 +204,11 @@ export function createOnlineGameState(
       conn?.send({ type: 'state-update', snapshot: serializeSnapshot(snapshot) });
       shaking = false;
       grid.needsRedraw = true;
+      persist();
       resetTimer();
-      // Send sync with full duration for new turn
       conn?.send({ type: 'timer-sync', remaining: timerMode });
     }, 1000);
   }
-
-  // Guest timer display: self-correcting wall-clock countdown
-  // guestTimerStartedAt + guestTimerDuration define the deadline; interval just derives remaining
-  let guestTimerDuration = 0; // seconds from last sync point
 
   function startGuestDisplayTimer(): void {
     stopGuestDisplayTimer();
@@ -165,21 +258,39 @@ export function createOnlineGameState(
     grid.needsRedraw = true;
   }
 
+  /** Send reconnect-state message (host only) */
+  function sendReconnectState(): void {
+    conn?.send({
+      type: 'reconnect-state',
+      snapshot: serializeSnapshot(snapshot),
+      timerMode,
+      timerRemaining: timerRemaining,
+    });
+  }
+
   if (role === 'host') {
     const hostConn = createHost({
       onOpen(id: string) {
-        networkState.status = 'connecting'; // waiting for guest
+        networkState.status = 'connecting';
         networkState.gameId = id;
       },
       onConnect() {
+        const wasReconnecting = networkState.status === 'reconnecting';
         networkState.status = 'connected';
-        // Send initial game state to guest
-        hostConn.send({ type: 'game-start', snapshot: serializeSnapshot(snapshot) });
-        // Send timer config and start timer
-        if (timerActive) {
-          hostConn.send({ type: 'timer-config', mode: timerMode });
-          startTimer();
+
+        if (wasReconnecting) {
+          // Guest reconnected — send full state
+          sendReconnectState();
+          if (timerActive) resumeTimer();
+        } else {
+          // Fresh connection
+          hostConn.send({ type: 'game-start', snapshot: serializeSnapshot(snapshot) });
+          if (timerActive) {
+            hostConn.send({ type: 'timer-config', mode: timerMode });
+            startTimer();
+          }
         }
+        persist();
       },
       onData(msg: GameMessage) {
         if (msg.type === 'move-request') {
@@ -188,7 +299,6 @@ export function createOnlineGameState(
           if (isValidMove(snapshot, hex)) {
             snapshot = applyMove(snapshot, hex);
             hostConn.send({ type: 'state-update', snapshot: serializeSnapshot(snapshot) });
-            // If turn changed, reset timer
             if (snapshot.currentPlayer !== previousPlayer) {
               resetTimer();
               if (timerActive) {
@@ -196,63 +306,70 @@ export function createOnlineGameState(
               }
             }
           } else {
-            // Send current state as correction
             hostConn.send({ type: 'state-update', snapshot: serializeSnapshot(snapshot) });
           }
           grid.needsRedraw = true;
+          persist();
         } else if (msg.type === 'rematch-request') {
           snapshot = applyRematch(snapshot);
           hostConn.send({ type: 'rematch-accept', snapshot: serializeSnapshot(snapshot) });
           grid.camera = DEFAULT_CAMERA;
           grid.needsRedraw = true;
-          // Reset timer for rematch
           stopTimer();
           if (timerActive) {
             hostConn.send({ type: 'timer-config', mode: timerMode });
             startTimer();
           }
+          persist();
         } else if (msg.type === 'ping') {
           hostConn.send({ type: 'pong' });
         }
       },
       onClose() {
-        networkState.status = 'disconnected';
-        stopTimer();
+        networkState.status = 'reconnecting';
+        pauseTimer();
       },
       onError(err: Error) {
         networkState.error = err.message;
         networkState.status = 'disconnected';
         stopTimer();
       },
-    }, gameId ?? undefined);
+    }, gameId);
     conn = hostConn;
   } else {
     // Guest role
     networkState.status = 'connecting';
-    const guestConnPromise = joinGame(gameId!, {
-      onOpen() {
-        // Guest peer opened, connection in progress
-      },
+    const guestConnPromise = joinGame(gameId, {
+      onOpen() {},
       onConnect() {
         networkState.status = 'connected';
+        // Cancel any active reconnection loop
+        if (reconnectHandle) {
+          reconnectHandle.cancel();
+          reconnectHandle = null;
+        }
+        reconnectAttempt = 0;
+        reconnectFailed = false;
       },
       onData(msg: GameMessage) {
         if (msg.type === 'game-start') {
           snapshot = deserializeSnapshot(msg.snapshot);
           grid.needsRedraw = true;
+          persist();
         } else if (msg.type === 'state-update') {
           const previousPlayer = snapshot.currentPlayer;
           snapshot = deserializeSnapshot(msg.snapshot);
           waitingForConfirmation = false;
           grid.needsRedraw = true;
-          // If turn changed, reset guest display timer
           if (snapshot.currentPlayer !== previousPlayer && guestTimerMode > 0) {
             resetGuestTimer(guestTimerMode);
           }
+          persist();
         } else if (msg.type === 'rematch-accept') {
           snapshot = deserializeSnapshot(msg.snapshot);
           grid.camera = DEFAULT_CAMERA;
           grid.needsRedraw = true;
+          persist();
         } else if (msg.type === 'timer-config') {
           guestTimerMode = msg.mode;
           timerRemaining = msg.mode;
@@ -260,7 +377,6 @@ export function createOnlineGameState(
             startGuestDisplayTimer();
           }
         } else if (msg.type === 'timer-sync') {
-          // Reset wall-clock anchor on each sync from host
           timerRemaining = msg.remaining;
           guestTimerDuration = msg.remaining;
           guestTimerStartedAt = Date.now();
@@ -273,12 +389,87 @@ export function createOnlineGameState(
           shakeTimeoutId = setTimeout(() => {
             shaking = false;
           }, 1000);
+        } else if (msg.type === 'reconnect-state') {
+          // Full state restore from host on reconnection
+          snapshot = deserializeSnapshot(msg.snapshot);
+          guestTimerMode = msg.timerMode;
+          timerRemaining = msg.timerRemaining;
+          grid.needsRedraw = true;
+          persist();
+          if (msg.timerMode > 0 && msg.timerRemaining > 0) {
+            resetGuestTimer(msg.timerRemaining);
+          }
         }
-        // pong: no-op (keepalive)
       },
       onClose() {
-        networkState.status = 'disconnected';
         stopGuestDisplayTimer();
+        // Start reconnection loop
+        networkState.status = 'reconnecting';
+        reconnectAttempt = 0;
+        reconnectFailed = false;
+
+        reconnectHandle = startReconnectLoop(gameId, {
+          onAttempt(attempt: number) {
+            reconnectAttempt = attempt;
+          },
+          onOpen() {},
+          onConnect() {
+            networkState.status = 'connected';
+            reconnectHandle = null;
+            reconnectAttempt = 0;
+            reconnectFailed = false;
+          },
+          onData(msg: GameMessage) {
+            // Forward to same handler
+            if (msg.type === 'reconnect-state') {
+              snapshot = deserializeSnapshot(msg.snapshot);
+              guestTimerMode = msg.timerMode;
+              timerRemaining = msg.timerRemaining;
+              grid.needsRedraw = true;
+              persist();
+              if (msg.timerMode > 0 && msg.timerRemaining > 0) {
+                resetGuestTimer(msg.timerRemaining);
+              }
+            } else if (msg.type === 'state-update') {
+              const previousPlayer = snapshot.currentPlayer;
+              snapshot = deserializeSnapshot(msg.snapshot);
+              waitingForConfirmation = false;
+              grid.needsRedraw = true;
+              if (snapshot.currentPlayer !== previousPlayer && guestTimerMode > 0) {
+                resetGuestTimer(guestTimerMode);
+              }
+              persist();
+            } else if (msg.type === 'game-start') {
+              snapshot = deserializeSnapshot(msg.snapshot);
+              grid.needsRedraw = true;
+              persist();
+            } else if (msg.type === 'timer-config') {
+              guestTimerMode = msg.mode;
+              timerRemaining = msg.mode;
+              if (msg.mode > 0) startGuestDisplayTimer();
+            } else if (msg.type === 'timer-sync') {
+              timerRemaining = msg.remaining;
+              guestTimerDuration = msg.remaining;
+              guestTimerStartedAt = Date.now();
+            } else if (msg.type === 'timer-expired') {
+              timerExpired = true;
+              shaking = true;
+              stopGuestDisplayTimer();
+              timerRunning = false;
+              timerRemaining = 0;
+              shakeTimeoutId = setTimeout(() => { shaking = false; }, 1000);
+            }
+          },
+          onClose() {
+            // Reconnected peer also disconnected — keep retrying unless cancelled/failed
+          },
+          onError(err: Error) {
+            if (err.message === 'Reconnection timed out') {
+              reconnectFailed = true;
+              networkState.status = 'disconnected';
+            }
+          },
+        });
       },
       onError(err: Error) {
         networkState.error = err.message;
@@ -286,12 +477,13 @@ export function createOnlineGameState(
         stopGuestDisplayTimer();
       },
     });
-    guestConnPromise.then((guestConn) => { conn = guestConn; });
+    guestConnPromise.then((guestConn) => {
+      conn = guestConn;
+    });
   }
 
   function placeStone(hex: HexCoord): void {
     if (role === 'host') {
-      // Host can only place during their turn (X)
       if (snapshot.currentPlayer !== 'X') return;
 
       if (!isValidMove(snapshot, hex)) {
@@ -304,7 +496,7 @@ export function createOnlineGameState(
       snapshot = applyMove(snapshot, hex);
       conn?.send({ type: 'state-update', snapshot: serializeSnapshot(snapshot) });
       grid.needsRedraw = true;
-      // If turn changed, reset timer
+      persist();
       if (snapshot.currentPlayer !== previousPlayer) {
         resetTimer();
         if (timerActive) {
@@ -312,12 +504,9 @@ export function createOnlineGameState(
         }
       }
     } else {
-      // Guest can only place during their turn (O)
       if (snapshot.currentPlayer !== 'O') return;
-      // Prevent double-click while waiting for host confirmation
       if (waitingForConfirmation) return;
 
-      // Client-side check to avoid unnecessary network round-trip
       if (snapshot.board.has(coordKey(hex))) {
         showRejection(hex);
         return;
@@ -330,7 +519,6 @@ export function createOnlineGameState(
 
   function rematch(): void {
     if (role === 'host') {
-      // Host computes and broadcasts new state directly
       snapshot = applyRematch(snapshot);
       conn?.send({ type: 'rematch-accept', snapshot: serializeSnapshot(snapshot) });
       rejectedHex = null;
@@ -340,21 +528,30 @@ export function createOnlineGameState(
       }
       grid.camera = DEFAULT_CAMERA;
       grid.needsRedraw = true;
-      // Reset timer for rematch
       stopTimer();
       if (timerActive) {
         conn?.send({ type: 'timer-config', mode: timerMode });
         startTimer();
       }
+      persist();
     } else {
-      // Guest sends request and waits for host to respond
       conn?.send({ type: 'rematch-request' });
     }
+  }
+
+  function cancelReconnect(): void {
+    if (reconnectHandle) {
+      reconnectHandle.cancel();
+      reconnectHandle = null;
+    }
+    reconnectAttempt = 0;
+    reconnectFailed = false;
   }
 
   function destroy(): void {
     stopTimer();
     stopGuestDisplayTimer();
+    cancelReconnect();
     if (shakeTimeoutId !== null) {
       clearTimeout(shakeTimeoutId);
       shakeTimeoutId = null;
@@ -383,17 +580,21 @@ export function createOnlineGameState(
     get gridState() { return grid; },
     placeStone,
     rematch,
-    // Additional network-specific getters
     get networkStatus() { return networkState.status; },
     get shareLink() { return networkState.gameId ? buildShareLink(networkState.gameId) : null; },
     get waitingForGuest() { return role === 'host' && networkState.status === 'connecting'; },
     get playerRole() { return role; },
-    // Timer getters
     get timerSeconds() { return timerActive ? timerRemaining : undefined; },
     get timerWarning() { return timerWarning; },
     get timerExpired() { return timerExpired; },
     get shaking() { return shaking; },
     get timerActive() { return timerActive; },
+    // Reconnection getters
+    get isReconnecting() { return networkState.status === 'reconnecting'; },
+    get reconnectAttempt() { return reconnectAttempt; },
+    get reconnectFailed() { return reconnectFailed; },
+    get maxReconnectAttempts() { return maxReconnectAttempts; },
+    cancelReconnect,
     destroy,
   };
 }

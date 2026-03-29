@@ -10,13 +10,15 @@
   import JoinOverlay from './components/JoinOverlay.svelte';
   import ConnectionStatus from './components/ConnectionStatus.svelte';
   import TimerSelector from './components/TimerSelector.svelte';
+  import ReconnectOverlay from './components/ReconnectOverlay.svelte';
   import { createGameState, type GameStateAPI } from './lib/state/game-state.svelte';
-  import { createOnlineGameState, type OnlineGameStateAPI } from './lib/state/online-game-state.svelte';
+  import { createOnlineGameState, restorePersistedState, clearPersistedState, type OnlineGameStateAPI } from './lib/state/online-game-state.svelte';
   import { createNetworkState, type NetworkStateAPI } from './lib/network/network-state.svelte';
   import { createThemeState } from './lib/theme/theme-state.svelte';
   import { DARK_THEME, LIGHT_THEME } from './lib/theme/colors';
   import type { TimerMode } from './lib/game/timer';
   import { DEFAULT_TIMER_MODE } from './lib/game/timer';
+  import { generateGameId } from './lib/network/connection';
 
   type AppView = 'landing' | 'local-game' | 'online-setup' | 'online-host' | 'online-guest';
 
@@ -29,57 +31,57 @@
   let joinError = $state<string | null>(null);
   let timerMode = $state<TimerMode>(DEFAULT_TIMER_MODE);
 
-  // Theme persists across all views
   const themeState = createThemeState();
   const themeColors = $derived(themeState.theme === 'dark' ? DARK_THEME : LIGHT_THEME);
 
-  // Background game state — always exists so the board is always visible behind overlays
   const backgroundState = createGameState();
 
-  // Detect initial view from URL hash + sessionStorage
   function detectInitialView(): AppView {
     const hash = window.location.hash.slice(1);
-    if (hash.length >= 6) {
-      const storedRole = sessionStorage.getItem('hex-role');
-      if (storedRole === 'host') {
-        // Host refreshed — re-create as host with same game ID
-        gameId = hash;
-        return 'online-host';
-      }
+    if (hash.length < 6) return 'landing';
+
+    // Try to restore persisted state
+    const persisted = restorePersistedState();
+
+    if (persisted && persisted.gameId === hash) {
       gameId = hash;
-      return 'online-guest';
+      if (persisted.role === 'host') {
+        // Host refresh — restore state and reconnect
+        networkState = createNetworkState();
+        onlineGameState = createOnlineGameState('host', hash, networkState, persisted.timerMode, persisted.snapshot);
+        return 'online-host';
+      } else {
+        // Guest refresh — restore state for display, will reconnect
+        networkState = createNetworkState();
+        onlineGameState = createOnlineGameState('guest', hash, networkState, persisted.timerMode, persisted.snapshot);
+        return 'online-guest';
+      }
     }
-    return 'landing';
+
+    // No persisted state — fresh guest join
+    gameId = hash;
+    return 'online-guest';
   }
 
   let view = $state<AppView>(detectInitialView());
 
-  // If host refreshed, auto-restart the online game (timer lost on refresh -- unlimited)
-  if (view === 'online-host' && gameId) {
-    networkState = createNetworkState();
-    onlineGameState = createOnlineGameState('host', gameId, networkState, 0);
-  }
-
-  // Active game state for gameplay: local or online (when connected)
   const activeGameState = $derived<GameStateAPI | null>(
     view === 'local-game' ? gameState :
     (view === 'online-host' || view === 'online-guest') ? onlineGameState :
     null
   );
 
-  // The game state to render on the canvas — active game if playing, background otherwise
   const displayGameState = $derived<GameStateAPI>(activeGameState ?? backgroundState);
 
-  // Whether the game is actively playable (no overlay blocking it)
   const isPlaying = $derived(
     activeGameState != null &&
     view !== 'landing' &&
     view !== 'online-setup' &&
     !showWaitingOverlay &&
-    !showJoinOverlay
+    !showJoinOverlay &&
+    !showReconnectOverlay
   );
 
-  // Shake animation derived from online game state
   const isShaking = $derived(onlineGameState?.shaking ?? false);
 
   function startLocalGame() {
@@ -93,9 +95,11 @@
 
   function handleTimerSelect(mode: TimerMode) {
     timerMode = mode;
+    const newGameId = generateGameId();
+    gameId = newGameId;
     sessionStorage.setItem('hex-role', 'host');
     networkState = createNetworkState();
-    onlineGameState = createOnlineGameState('host', null, networkState, timerMode);
+    onlineGameState = createOnlineGameState('host', newGameId, networkState, timerMode);
     view = 'online-host';
   }
 
@@ -135,27 +139,33 @@
     gameId = null;
     joinStatus = 'ready';
     joinError = null;
-    sessionStorage.removeItem('hex-role');
+    clearPersistedState();
     window.location.hash = '';
     view = 'landing';
   }
 
-  // Whether the guest join overlay should be shown
+  // Whether the guest join overlay should be shown (not during reconnection)
   const showJoinOverlay = $derived(
     view === 'online-guest' && (
       joinStatus === 'ready' ||
       joinStatus === 'connecting' ||
       joinStatus === 'error'
-    ) && networkState?.status !== 'connected'
+    ) && networkState?.status !== 'connected' &&
+    networkState?.status !== 'reconnecting'
   );
 
   // Whether the host waiting overlay should be shown
   const showWaitingOverlay = $derived(
     view === 'online-host' && (
       onlineGameState?.waitingForGuest === true ||
-      !onlineGameState ||
-      networkState?.status === 'disconnected'
-    )
+      !onlineGameState
+    ) && networkState?.status !== 'reconnecting'
+  );
+
+  // Whether reconnect overlay should be shown
+  const showReconnectOverlay = $derived(
+    (view === 'online-host' || view === 'online-guest') &&
+    networkState?.status === 'reconnecting'
   );
 
   // Whether the connection status should be shown
@@ -163,21 +173,19 @@
     (view === 'online-host' || view === 'online-guest') &&
     networkState != null &&
     !showWaitingOverlay &&
-    !showJoinOverlay
+    !showJoinOverlay &&
+    !showReconnectOverlay
   );
 
-  // Determine waiting overlay status
   const waitingStatus = $derived<'registering' | 'waiting'>(
     networkState?.status === 'disconnected' ? 'registering' : 'waiting'
   );
 </script>
 
 <div class="game-container" class:shake={isShaking}>
-  <!-- Board always renders as background -->
   <HexCanvas bind:debugActive gameState={displayGameState} {themeColors} />
   <ThemeToggle theme={themeState.theme} onToggle={() => themeState.toggle()} />
 
-  <!-- Game UI overlays (only when actively playing) -->
   {#if isPlaying && activeGameState}
     <TurnIndicator
       currentPlayer={activeGameState.currentPlayer}
@@ -193,7 +201,6 @@
     {/if}
   {/if}
 
-  <!-- Menu/connection overlays (semi-transparent over the board) -->
   {#if view === 'landing'}
     <LandingPage onLocalGame={startLocalGame} onOnlineGame={startOnlineGame} />
   {/if}
@@ -205,6 +212,15 @@
   {/if}
   {#if showJoinOverlay}
     <JoinOverlay onJoin={handleJoin} status={joinStatus} error={joinError ?? undefined} onBack={handleBack} />
+  {/if}
+  {#if showReconnectOverlay && onlineGameState}
+    <ReconnectOverlay
+      attempt={onlineGameState.reconnectAttempt}
+      maxAttempts={onlineGameState.maxReconnectAttempts}
+      failed={onlineGameState.reconnectFailed}
+      onCancel={() => onlineGameState?.cancelReconnect()}
+      onBack={handleBack}
+    />
   {/if}
   {#if showConnectionStatus && networkState}
     <ConnectionStatus status={networkState.status} />

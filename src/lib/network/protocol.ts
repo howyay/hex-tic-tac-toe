@@ -25,7 +25,8 @@ export type GameMessage =
   | { type: 'pong' }
   | { type: 'timer-config'; mode: TimerMode }
   | { type: 'timer-sync'; remaining: number }
-  | { type: 'timer-expired' };
+  | { type: 'timer-expired' }
+  | { type: 'reconnect-state'; snapshot: SerializedSnapshot; timerMode: TimerMode; timerRemaining: number };
 
 /** Convert a GameSnapshot to a JSON-serializable form (Map -> Record) */
 export function serializeSnapshot(s: GameSnapshot): SerializedSnapshot {

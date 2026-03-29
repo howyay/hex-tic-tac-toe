@@ -1,4 +1,4 @@
-export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected';
+export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
 export type PlayerRole = 'host' | 'guest';
 
 export function createNetworkState() {

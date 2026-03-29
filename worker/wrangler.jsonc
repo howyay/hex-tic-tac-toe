@@ -2,5 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "hex-ttt-turn",
   "main": "src/index.ts",
-  "compatibility_date": "2025-04-01"
+  "compatibility_date": "2025-04-01",
+  "kv_namespaces": [
+    { "binding": "GAME_ROOMS", "id": "7fbf91c8d8fb4bb7929f61fe3b995680" }
+  ]
 }

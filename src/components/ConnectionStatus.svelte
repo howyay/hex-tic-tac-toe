@@ -1,10 +1,11 @@
 <script lang="ts">
-  let { status }: { status: 'connected' | 'connecting' | 'disconnected' } = $props();
+  let { status }: { status: 'connected' | 'connecting' | 'disconnected' | 'reconnecting' } = $props();
 
   const statusConfig = {
     connected:    { cssVar: 'var(--color-status-connected)', text: 'Connected', pulse: false },
     connecting:   { cssVar: 'var(--color-status-connecting)', text: 'Connecting...', pulse: true },
     disconnected: { cssVar: 'var(--color-status-disconnected)', text: 'Disconnected', pulse: false },
+    reconnecting: { cssVar: 'var(--color-status-connecting)', text: 'Reconnecting...', pulse: true },
   };
 
   const config = $derived(statusConfig[status]);
