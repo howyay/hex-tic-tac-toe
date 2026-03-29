@@ -12,7 +12,7 @@ This roadmap delivers a peer-to-peer hexagonal Connect6 game in five phases. The
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Hex Grid Engine** - Canvas-rendered hex grid with axial coordinates, viewport culling, pan, and zoom
+- [x] **Phase 1: Hex Grid Engine** - Canvas-rendered hex grid with axial coordinates, viewport culling, pan, and zoom
 - [x] **Phase 2: Game Rules and Local Play** - Complete Connect6 rules, win detection, game over, rematch as a local two-player game (completed 2026-03-22)
 - [x] **Phase 3: Theme and Touch Polish** - Light/dark theme, touch input (tap-to-place vs drag-to-pan), minimal aesthetic (completed 2026-03-23)
 - [x] **Phase 4: WebRTC Multiplayer** - P2P connection via shareable link, host-authoritative state sync, connection status (completed 2026-03-24)

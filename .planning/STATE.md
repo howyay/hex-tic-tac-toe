@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
+milestone: v2.0
 milestone_name: milestone
-status: Phase complete — ready for verification
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-29T03:53:44.532Z"
+status: v1 complete — starting v2 (reconnection, navigation, polish)
+stopped_at: v1 shipped, starting v2 planning
+last_updated: "2026-03-29"
 progress:
   total_phases: 5
   completed_phases: 5
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Two players can connect via a shared link and play a complete game of hex Connect6 with correct rules and win detection.
-**Current focus:** Phase 05 — turn-timer
+**Current focus:** v2 — reconnection, navigation, polish
 
 ## Current Position
 
-Phase: 05 (turn-timer) — EXECUTING
-Plan: 2 of 2
+v1: COMPLETE (all 5 phases, 15 plans, 32 requirements delivered)
+v2: PLANNING — next up: RES-01/02/03 (reconnection), NAV-01/02, POL-01/02/03
 
 ## Performance Metrics
 
