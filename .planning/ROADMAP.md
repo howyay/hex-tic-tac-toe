@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Game Rules and Local Play** - Complete Connect6 rules, win detection, game over, rematch as a local two-player game (completed 2026-03-22)
 - [x] **Phase 3: Theme and Touch Polish** - Light/dark theme, touch input (tap-to-place vs drag-to-pan), minimal aesthetic (completed 2026-03-23)
 - [x] **Phase 4: WebRTC Multiplayer** - P2P connection via shareable link, host-authoritative state sync, connection status (completed 2026-03-24)
-- [ ] **Phase 5: Turn Timer** - Configurable turn timer with synchronized countdown and auto-forfeit
+- [x] **Phase 5: Turn Timer** - Configurable turn timer with synchronized countdown and auto-forfeit (completed 2026-03-29)
 
 ## Phase Details
 
@@ -100,7 +100,7 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md — Timer types, forfeitTurn logic, protocol message types, tests
-- [ ] 05-02-PLAN.md — TimerSelector UI, TurnIndicator update, online game state timer integration, App wiring, verification
+- [x] 05-02-PLAN.md — TimerSelector UI, TurnIndicator update, online game state timer integration, App wiring, verification
 
 ## Progress
 
@@ -113,4 +113,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Game Rules and Local Play | 3/3 | Complete   | 2026-03-22 |
 | 3. Theme and Touch Polish | 3/3 | Complete   | 2026-03-23 |
 | 4. WebRTC Multiplayer | 4/4 | Complete   | 2026-03-24 |
-| 5. Turn Timer | 1/2 | In Progress|  |
+| 5. Turn Timer | 2/2 | Complete   | 2026-03-29 |

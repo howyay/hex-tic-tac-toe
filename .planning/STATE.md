@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-24T08:30:43.648Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-29T03:53:44.532Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Plan: 2 of 2
 | Phase 04 P04 | 2min | 2 tasks | 3 files |
 | Phase 04 P04 | 5min | 3 tasks | 5 files |
 | Phase 05 P01 | 2min | 2 tasks | 5 files |
+| Phase 05 P02 | 30min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,8 @@ Recent decisions affecting current work:
 - [Phase 04]: All overlays (landing, waiting, join, game-over) render on dimmed board for visual consistency
 - [Phase 05]: forfeitTurn returns same snapshot reference for won games, matching applyMove invalid-move pattern
 - [Phase 05]: Timer protocol uses 3 distinct message types (config, sync, expired) for clear separation
+- [Phase 05]: Host-authoritative timer: host runs setInterval at 200ms, syncs to guest every 5s and on each turn change
+- [Phase 05]: timerSeconds prop is undefined (not 0) when no timer active, allowing TurnIndicator to cleanly hide countdown
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T08:30:43.645Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-29T03:53:44.530Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
