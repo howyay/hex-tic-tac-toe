@@ -26,7 +26,7 @@ export function createOnlineGameState(
   let conn: { send: (msg: GameMessage) => void; destroy: () => void } | null = null;
 
   // Timer state (transient, not in snapshot)
-  let guestTimerMode: TimerMode = 0;
+  let guestTimerMode = $state<TimerMode>(0);
   let timerRemaining = $state(0);
   let timerRunning = $state(false);
   let timerExpired = $state(false);
