@@ -10,7 +10,7 @@
   const HEX_SIZE = 30;
   const CLICK_THRESHOLD = 5;
 
-  const state = gameState.gridState;
+  const state = $derived(gameState.gridState);
 
   let dragDistance = 0;
 

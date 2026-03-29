@@ -20,7 +20,7 @@
 <div class="setup-overlay">
   <div class="content">
     <h1 class="heading">Game Setup</h1>
-    <label class="timer-label">Turn Timer</label>
+    <span class="timer-label">Turn Timer</span>
     <div class="segmented-group">
       {#each options as mode, i}
         <button

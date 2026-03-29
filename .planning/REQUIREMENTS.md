@@ -53,20 +53,20 @@
 
 ### Resilience
 
-- **RES-01**: Player can rejoin via same link if disconnected, game state preserved
-- **RES-02**: Automatic reconnection attempt on connection drop
-- **RES-03**: Game state serialization for reconnection recovery
+- [x] **RES-01**: Player can rejoin via same link if disconnected, game state preserved
+- [x] **RES-02**: Automatic reconnection attempt on connection drop
+- [x] **RES-03**: Game state serialization for reconnection recovery
 
 ### Navigation
 
-- **NAV-01**: "Center on action" button snaps view to bounding box of placed stones
-- **NAV-02**: Animated camera transitions when centering
+- [x] **NAV-01**: "Center on action" button snaps view to bounding box of placed stones
+- [x] **NAV-02**: Animated camera transitions when centering
 
 ### Polish
 
-- **POL-01**: Last-move highlight showing most recently placed stones
-- **POL-02**: Subtle placement animation when stone is placed
-- **POL-03**: Export move list to clipboard (lightweight replay)
+- [x] **POL-01**: Last-move highlight showing most recently placed stones
+- [x] **POL-02**: Subtle placement animation when stone is placed
+- [x] **POL-03**: Export move list to clipboard (lightweight replay)
 
 ## Out of Scope
 
@@ -120,11 +120,20 @@
 | NET-08 | Phase 5 | Complete |
 | NET-09 | Phase 5 | Complete |
 
+| RES-01 | v2 | Complete |
+| RES-02 | v2 | Complete |
+| RES-03 | v2 | Complete |
+| NAV-01 | v2 | Complete |
+| NAV-02 | v2 | Complete |
+| POL-01 | v2 | Complete |
+| POL-02 | v2 | Complete |
+| POL-03 | v2 | Complete |
+
 **Coverage:**
-- v1 requirements: 32 total
-- Mapped to phases: 32
+- v1 requirements: 32 total — all complete
+- v2 requirements: 8 total — all complete
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after roadmap creation*
+*Last updated: 2026-03-29 — v2 complete*

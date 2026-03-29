@@ -344,7 +344,84 @@ export function createOnlineGameState(
       },
     }, gameId);
     conn = hostConn;
-  } else {
+  }
+
+  /** Start or restart the guest reconnection loop */
+  function beginGuestReconnection(): void {
+    if (reconnectHandle) {
+      reconnectHandle.cancel();
+      reconnectHandle = null;
+    }
+    networkState.status = 'reconnecting';
+    reconnectAttempt = 0;
+    reconnectFailed = false;
+
+    reconnectHandle = startReconnectLoop(gameId, {
+      onAttempt(attempt: number) {
+        reconnectAttempt = attempt;
+      },
+      onOpen() {},
+      onConnect() {
+        networkState.status = 'connected';
+        reconnectHandle = null;
+        reconnectAttempt = 0;
+        reconnectFailed = false;
+      },
+      onData(msg: GameMessage) {
+        if (msg.type === 'reconnect-state') {
+          snapshot = deserializeSnapshot(msg.snapshot);
+          guestTimerMode = msg.timerMode;
+          timerRemaining = msg.timerRemaining;
+          grid.needsRedraw = true;
+          persist();
+          if (msg.timerMode > 0 && msg.timerRemaining > 0) {
+            resetGuestTimer(msg.timerRemaining);
+          }
+        } else if (msg.type === 'state-update') {
+          const previousPlayer = snapshot.currentPlayer;
+          snapshot = deserializeSnapshot(msg.snapshot);
+          waitingForConfirmation = false;
+          grid.needsRedraw = true;
+          if (snapshot.currentPlayer !== previousPlayer && guestTimerMode > 0) {
+            resetGuestTimer(guestTimerMode);
+          }
+          persist();
+        } else if (msg.type === 'game-start') {
+          snapshot = deserializeSnapshot(msg.snapshot);
+          grid.needsRedraw = true;
+          persist();
+        } else if (msg.type === 'timer-config') {
+          guestTimerMode = msg.mode;
+          timerRemaining = msg.mode;
+          if (msg.mode > 0) startGuestDisplayTimer();
+        } else if (msg.type === 'timer-sync') {
+          timerRemaining = msg.remaining;
+          guestTimerDuration = msg.remaining;
+          guestTimerStartedAt = Date.now();
+        } else if (msg.type === 'timer-expired') {
+          timerExpired = true;
+          shaking = true;
+          stopGuestDisplayTimer();
+          timerRunning = false;
+          timerRemaining = 0;
+          shakeTimeoutId = setTimeout(() => { shaking = false; }, 1000);
+        }
+      },
+      onClose() {
+        // Reconnected peer disconnected again — restart a fresh reconnection loop
+        stopGuestDisplayTimer();
+        beginGuestReconnection();
+      },
+      onError(err: Error) {
+        if (err.message === 'Reconnection timed out') {
+          reconnectFailed = true;
+          networkState.status = 'disconnected';
+        }
+      },
+    });
+  }
+
+  if (role !== 'host') {
     // Guest role
     networkState.status = 'connecting';
     const guestConnPromise = joinGame(gameId, {
@@ -411,73 +488,7 @@ export function createOnlineGameState(
       },
       onClose() {
         stopGuestDisplayTimer();
-        // Start reconnection loop
-        networkState.status = 'reconnecting';
-        reconnectAttempt = 0;
-        reconnectFailed = false;
-
-        reconnectHandle = startReconnectLoop(gameId, {
-          onAttempt(attempt: number) {
-            reconnectAttempt = attempt;
-          },
-          onOpen() {},
-          onConnect() {
-            networkState.status = 'connected';
-            reconnectHandle = null;
-            reconnectAttempt = 0;
-            reconnectFailed = false;
-          },
-          onData(msg: GameMessage) {
-            // Forward to same handler
-            if (msg.type === 'reconnect-state') {
-              snapshot = deserializeSnapshot(msg.snapshot);
-              guestTimerMode = msg.timerMode;
-              timerRemaining = msg.timerRemaining;
-              grid.needsRedraw = true;
-              persist();
-              if (msg.timerMode > 0 && msg.timerRemaining > 0) {
-                resetGuestTimer(msg.timerRemaining);
-              }
-            } else if (msg.type === 'state-update') {
-              const previousPlayer = snapshot.currentPlayer;
-              snapshot = deserializeSnapshot(msg.snapshot);
-              waitingForConfirmation = false;
-              grid.needsRedraw = true;
-              if (snapshot.currentPlayer !== previousPlayer && guestTimerMode > 0) {
-                resetGuestTimer(guestTimerMode);
-              }
-              persist();
-            } else if (msg.type === 'game-start') {
-              snapshot = deserializeSnapshot(msg.snapshot);
-              grid.needsRedraw = true;
-              persist();
-            } else if (msg.type === 'timer-config') {
-              guestTimerMode = msg.mode;
-              timerRemaining = msg.mode;
-              if (msg.mode > 0) startGuestDisplayTimer();
-            } else if (msg.type === 'timer-sync') {
-              timerRemaining = msg.remaining;
-              guestTimerDuration = msg.remaining;
-              guestTimerStartedAt = Date.now();
-            } else if (msg.type === 'timer-expired') {
-              timerExpired = true;
-              shaking = true;
-              stopGuestDisplayTimer();
-              timerRunning = false;
-              timerRemaining = 0;
-              shakeTimeoutId = setTimeout(() => { shaking = false; }, 1000);
-            }
-          },
-          onClose() {
-            // Reconnected peer also disconnected — keep retrying unless cancelled/failed
-          },
-          onError(err: Error) {
-            if (err.message === 'Reconnection timed out') {
-              reconnectFailed = true;
-              networkState.status = 'disconnected';
-            }
-          },
-        });
+        beginGuestReconnection();
       },
       onError(err: Error) {
         networkState.error = err.message;
