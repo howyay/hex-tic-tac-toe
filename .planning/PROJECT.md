@@ -8,75 +8,59 @@ A peer-to-peer hexagonal tic-tac-toe game played on an infinite hex grid. Two pl
 
 Two players can connect via a shared link and play a complete game of hex Connect6 with correct rules and win detection.
 
+## Status
+
+**v2 complete** — all 40 requirements delivered across 5 phases and 15 plans.
+
+- v1: Hex grid engine, game rules, theme/touch polish, WebRTC multiplayer, turn timer
+- v2: Reconnection support, center-on-action, last-move highlight, placement animation, move list export
+
+Production: https://howyay.github.io/hex-tic-tac-toe/
+
 ## Requirements
 
-### Validated
+See [REQUIREMENTS.md](REQUIREMENTS.md) for the full checklist (32 v1 + 8 v2, all complete).
 
-(None yet — ship to validate)
+## Out of Scope
 
-### Active
-
-- [ ] Infinite hexagonal grid rendered on canvas with pan and zoom navigation
-- [ ] Correct game rules: X places 1 first turn, then players alternate placing 2 per turn
-- [ ] Win detection: 6 consecutive pieces along any of the 3 hex axes
-- [ ] WebRTC peer-to-peer connection via shareable link
-- [ ] Configurable turn timer (host sets: 30s, 60s, unlimited)
-- [ ] Reconnection support — player can rejoin via same link if disconnected, game state preserved
-- [ ] Minimal, clean UI — light/dark, focus on the board
-- [ ] Visual indication of whose turn it is and how many placements remain this turn
-- [ ] Game over screen showing winner and option to rematch
-
-### Out of Scope
-
-- AI/bot opponent — multiplayer only for v1
-- User accounts or persistent profiles — anonymous play via link
-- Mobile-native app — web only, though should be touch-friendly
-- Game history or replays — live play only
-- Spectator mode — two players only
-- Chat system — players communicate outside the app
-- Sound effects or animations beyond basic feedback — minimal clean aesthetic
+| Feature | Reason |
+|---------|--------|
+| AI/bot opponent | Connect6 AI on infinite hex grid is a research problem; multiplayer-only focus |
+| User accounts or profiles | Anonymous play IS the differentiator; zero friction |
+| Game history or replays | Requires persistent storage; P2P model is ephemeral |
+| Spectator mode | Third peer complicates WebRTC topology for minimal value |
+| In-game chat | Players communicate via channel used to share the link |
+| Sound effects | Minimal aesthetic is deliberate |
+| Undo/take-back | Complex P2P protocol; hover preview prevents misclicks |
+| Mobile native app | Web only; touch-friendly responsive design instead |
 
 ## Context
 
-- This is a variant of Connect6, a well-studied combinatorial game, adapted to a hexagonal grid
-- Hex grids have 3 axes of alignment (horizontal, and two diagonals) vs 4 in square grids
-- The infinite grid means no boundary-based strategy — pure placement tactics
-- WebRTC requires a signaling mechanism; a lightweight signaling server or service is needed to establish the P2P connection, but game state flows directly between peers
-- Svelte chosen as frontend framework with canvas rendering for the hex grid
-- Pan + zoom navigation for exploring the infinite board
+- Connect6 variant adapted to a hexagonal grid (3 axes of alignment vs 4 in square grids)
+- Infinite grid — no boundary-based strategy, pure placement tactics
+- WebRTC P2P via PeerJS; TURN relay on Cloudflare Worker for NAT traversal
+- Cloudflare KV for room registry (reconnection support)
+- Svelte 5 + Vite + TypeScript; Canvas 2D for hex rendering
+- Deployed as static site to GitHub Pages via Actions
 
 ## Constraints
 
-- **Tech stack**: Svelte frontend with HTML5 Canvas for hex grid rendering
-- **Networking**: WebRTC for P2P game state sync; needs a signaling server or service for connection establishment
-- **Deployment**: Static site + minimal signaling backend
+- **Tech stack**: Svelte 5 + TypeScript + Vite, HTML5 Canvas for hex grid rendering
+- **Networking**: WebRTC (PeerJS) for P2P game state sync; Cloudflare Worker for TURN credentials + room registry
+- **Deployment**: GitHub Pages (static) + Cloudflare Worker (TURN/KV)
 - **Browser support**: Modern browsers with WebRTC support
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Svelte + Canvas | User preference; Svelte is lightweight, Canvas handles infinite grid well | — Pending |
-| WebRTC P2P | Direct connection = low latency, no game server needed | — Pending |
-| Hex Connect6 rules (1-2-2-2...) | Balances first-mover advantage while keeping hex grid strategy | — Pending |
-| Configurable turn timer | Supports both casual and competitive play styles | — Pending |
-
-## Evolution
-
-This document evolves at phase transitions and milestone boundaries.
-
-**After each phase transition** (via `/gsd:transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd:complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+| Svelte 5 + Vite (no SvelteKit) | Single-page canvas game needs no SSR or routing | Validated — clean, fast builds |
+| WebRTC P2P via PeerJS | Direct connection = low latency, no game server needed | Validated — works well for 2-player |
+| Hex Connect6 rules (1-2-2-2...) | Balances first-mover advantage on hex grid | Validated — gameplay feels balanced |
+| Configurable turn timer | Supports both casual and competitive play | Validated — 30s/60s/unlimited |
+| Native Canvas 2D (no framework) | Hex rendering is simple geometry; frameworks add overhead | Validated — performant, simple |
+| Cloudflare Worker for TURN | Free tier, KV for room registry, global edge network | Validated — reliable NAT traversal |
+| Host-authoritative model | Prevents cheating; host validates all moves | Validated — clean separation |
 
 ---
-*Last updated: 2026-03-21 after initialization*
+*Last updated: 2026-03-29 — v2 complete*
