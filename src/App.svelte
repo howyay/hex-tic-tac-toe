@@ -256,6 +256,7 @@
       failed={onlineGameState.reconnectFailed}
       onCancel={() => onlineGameState?.cancelReconnect()}
       onBack={handleBack}
+      isHost={view === 'online-host'}
     />
   {/if}
   {#if showCenterButton}

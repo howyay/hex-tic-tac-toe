@@ -10,6 +10,7 @@ const TURN_CREDENTIAL_URL = import.meta.env.VITE_TURN_CREDENTIAL_URL as string |
 
 const RECONNECT_INTERVAL = 3000; // 3 seconds between attempts
 const RECONNECT_MAX_ATTEMPTS = 20; // 60 seconds total
+const RECONNECT_ATTEMPT_TIMEOUT = 8000; // 8 seconds before declaring a single attempt failed
 
 const HEARTBEAT_INTERVAL = 2000; // send ping every 2s
 const HEARTBEAT_TIMEOUT = 6000;  // declare dead after 6s of silence
@@ -286,10 +287,24 @@ export function startReconnectLoop(
   let currentPeer: Peer | null = null;
   let conn: DataConnection | null = null;
   let detector: ReturnType<typeof createDisconnectDetector> | null = null;
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let attemptTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let connected = false;
+
+  function clearTimers() {
+    if (retryTimeoutId) { clearTimeout(retryTimeoutId); retryTimeoutId = null; }
+    if (attemptTimeoutId) { clearTimeout(attemptTimeoutId); attemptTimeoutId = null; }
+  }
+
+  function scheduleRetry() {
+    if (!cancelled) {
+      retryTimeoutId = setTimeout(tryConnect, RECONNECT_INTERVAL);
+    }
+  }
 
   async function tryConnect() {
     if (cancelled) return;
+    clearTimers();
     attempt++;
     callbacks.onAttempt(attempt);
 
@@ -302,17 +317,25 @@ export function startReconnectLoop(
     if (cancelled) return;
 
     if (!hostPeerId) {
-      timeoutId = setTimeout(tryConnect, RECONNECT_INTERVAL);
+      scheduleRetry();
       return;
     }
 
     detector?.cleanup();
     currentPeer?.destroy();
+    connected = false;
 
     const config = await getIceConfig();
     if (cancelled) return;
 
     currentPeer = new Peer(undefined as unknown as string, { debug: 0, config });
+
+    attemptTimeoutId = setTimeout(() => {
+      if (!connected && !cancelled) {
+        currentPeer?.destroy();
+        scheduleRetry();
+      }
+    }, RECONNECT_ATTEMPT_TIMEOUT);
 
     currentPeer.on('open', () => {
       if (cancelled || !currentPeer) return;
@@ -320,6 +343,8 @@ export function startReconnectLoop(
       conn = dataConn;
 
       dataConn.on('open', () => {
+        connected = true;
+        clearTimers();
         detector = createDisconnectDetector(
           dataConn,
           () => { try { dataConn.send({ type: 'ping' }); } catch {} },
@@ -342,8 +367,9 @@ export function startReconnectLoop(
     });
 
     currentPeer.on('error', () => {
-      if (!cancelled) {
-        timeoutId = setTimeout(tryConnect, RECONNECT_INTERVAL);
+      if (!cancelled && !connected) {
+        clearTimers();
+        scheduleRetry();
       }
     });
   }
@@ -353,7 +379,7 @@ export function startReconnectLoop(
   return {
     cancel() {
       cancelled = true;
-      if (timeoutId) clearTimeout(timeoutId);
+      clearTimers();
       detector?.cleanup();
       currentPeer?.destroy();
     },

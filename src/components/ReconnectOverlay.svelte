@@ -5,12 +5,14 @@
     onCancel,
     failed = false,
     onBack,
+    isHost = false,
   }: {
     attempt: number;
     maxAttempts: number;
     onCancel: () => void;
     failed?: boolean;
     onBack: () => void;
+    isHost?: boolean;
   } = $props();
 
   let showConfirm = $state(false);
@@ -41,6 +43,11 @@
     <div class="heading">Could not reconnect</div>
     <div class="subtext">The host may have left the game.</div>
     <button class="back-button" onclick={onBack}>Back to menu</button>
+  {:else if isHost}
+    <div class="heading">Connection lost</div>
+    <div class="subtext">Waiting for opponent to reconnect...</div>
+    <div class="pulse-dot"></div>
+    <button class="cancel-button" onclick={handleCancel}>Cancel</button>
   {:else}
     <div class="heading">Connection lost</div>
     <div class="subtext">Reconnecting... Attempt {attempt} of {maxAttempts}</div>
